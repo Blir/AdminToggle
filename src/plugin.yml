@@ -1,0 +1,59 @@
+name: AdminToggle
+main: com.minepop.servegame.admintoggle.Admin
+version: 1.1.0
+author: Blir
+commands:
+  adminswitch:
+    description: Toggles admin mode.
+    usage: /<command>
+    permission: admintoggle.adminswitch
+    permission-message: You must be an admin to use this command.
+    aliases: [asdf, adswitch]
+  adminsaveram:
+    description: Creates a new save
+    usage: /<command> [save name] [overwrite:true/false]
+    permission: admintoggle.adminsaveram
+    permission-message: You must be an admin to use this command.
+    aliases: adram
+  adminload:
+    description: Loads the specified save.
+    usage: /<command> [save name]
+    permission: admintoggle.adminload
+    permission-message: You must be an admin to use this command.
+    aliases: adload
+  adminlistsnapshots:
+    description: Lists the current snapshots.
+    usage: /<command>
+    permission: admintoggle.adminlistsnapshots
+    permission-message: You must be an admin to use this command.
+    aliases: adlist
+  admindelete:
+    description: Deletes the specified save.
+    usage: /<command> [save name]
+    permission: admintoggle.admindelete
+    permission-message: You must be an admin to use this command.
+    aliases: addel
+  adminsavefile:
+    description: Saves the snapshots.
+    usage: /<command>
+    permission: admintoggle.adminsavefile
+    permission-message: You must be an admin to use this command.
+    aliases: adfile
+  admincheck:
+    description: Returns if admin mode is currently enabled.
+    usage: /<command>
+    permission: admintoggle.admincheck
+    permission-message: You must be an admin to use this command.
+    aliases: adcheck
+permissions:
+  admintoggle.*:
+    description: Gives full access to AdminToggle.
+    default: false
+    children:
+      admintoggle.adminswitch: true
+      admintoggle.adminsaveram: true
+      admintoggle.adminload: true
+      admintoggle.adminlistsnapshots: true
+      admintoggle.admindelete: true
+      admintoggle.adminsavefile: true
+      admintoggle.admincheck: true
