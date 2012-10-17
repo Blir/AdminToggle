@@ -21,7 +21,7 @@ public class User {
         snapshots.add(snap);
         return snap;
     }
-    public void loadSnapshot(Snapshot snap) {
+    public void addSnapshot(Snapshot snap) {
         snapshots.add(snap);
     }
     public ArrayList<Snapshot> getSnapshots() {
