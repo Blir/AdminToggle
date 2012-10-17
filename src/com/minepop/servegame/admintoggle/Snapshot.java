@@ -1,9 +1,7 @@
 package com.minepop.servegame.admintoggle;
 
-import java.util.Collection;
 import org.bukkit.GameMode;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 
 /**
  *
@@ -21,7 +19,6 @@ public class Snapshot {
     private float ex;
     private int food;
     private float sat;
-    private Collection<PotionEffect> pots;
 
     public Snapshot(String user, String name) {
         this.name = name;
@@ -81,10 +78,6 @@ public class Snapshot {
         return sat;
     }
 
-    public Collection<PotionEffect> getPotionEffects() {
-        return pots;
-    }
-
     public void setInv(ItemStack[] inv, ItemStack[] armor) {
         this.inv = new ItemStack[inv.length];
         for (int idx = 0; idx < inv.length; idx++) {
@@ -122,9 +115,5 @@ public class Snapshot {
 
     public void setSaturation(float sat) {
         this.sat = sat;
-    }
-
-    public void setPotionEffects(Collection<PotionEffect> pots) {
-        this.pots = pots;
     }
 }
