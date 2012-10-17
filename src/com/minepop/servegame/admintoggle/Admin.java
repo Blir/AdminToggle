@@ -19,6 +19,9 @@ public class Admin extends JavaPlugin {
     private static ArrayList<User> users = new ArrayList<>(1);
     private static String folder;
 
+    /**
+     * Called when the plugin is enabled.
+     */
     @Override
     public void onEnable() {
         File file = getDataFolder();
@@ -29,11 +32,23 @@ public class Admin extends JavaPlugin {
         loadSnapshots();
     }
 
+    /**
+     * Called when the plugin is disabled.
+     */
     @Override
     public void onDisable() {
         saveSnapshots();
     }
 
+    /**
+     * Called when a player executes a command.
+     *
+     * @param sender The sender of the command
+     * @param cmd The command sent
+     * @param label
+     * @param args The command arguments
+     * @return success
+     */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
@@ -119,6 +134,13 @@ public class Admin extends JavaPlugin {
         return false;
     }
 
+    /**
+     * Returns the User associated with the given name, and creates one if one
+     * isn't found.
+     *
+     * @param name The name of the User
+     * @return The User
+     */
     public User getUser(String name) {
         for (User user : users) {
             if (name.equals(user.getName())) {
@@ -130,6 +152,16 @@ public class Admin extends JavaPlugin {
         return user;
     }
 
+    /**
+     * Saves a Snapshot to RAM.
+     *
+     * @param user The User to save the Snapshot to
+     * @param name The name the Snapshot will be saved as
+     * @param player The Player saving the Snapshot
+     * @param overwrite If true then overwrite the existing Snapshot with the
+     * given name, if there is one
+     * @return true if the Snapshot was saved.
+     */
     public boolean saveSnapshot(User user, String name, Player player, boolean overwrite) {
         if (user.snapshotExists(name) && !overwrite) {
             player.sendMessage("The snapshot " + name + " already exists!");
@@ -151,6 +183,14 @@ public class Admin extends JavaPlugin {
         return true;
     }
 
+    /**
+     * Loads a Snapshot from RAM.
+     *
+     * @param user The User to load the Snapshot to
+     * @param name The name of the Snapshot to load
+     * @param player The Player to load the Snapshot to
+     * @return true if the Snapshot was loaded
+     */
     public boolean loadSnapshot(User user, String name, Player player) {
         Snapshot snap = user.getSnapshot(name);
         if (snap == null) {
@@ -168,6 +208,9 @@ public class Admin extends JavaPlugin {
         return true;
     }
 
+    /**
+     * Saves all Snapshots to file.
+     */
     public void saveSnapshots() {
         File file = new File(folder + "/snapshots.properties");
         FileOutputStream fos = null;
@@ -187,21 +230,21 @@ public class Admin extends JavaPlugin {
                     for (int idx3 = 0; idx3 < snap.getInv().length; idx3++) {
                         ItemStack inv = snap.getInv()[idx3];
                         if (inv != null) {
-                            p.setProperty("IType\\" + user.getName() + "\\" + snap.getName() + "\\" + 
-                                    idx3, String.valueOf(inv.getTypeId()));
-                            p.setProperty("IAmount\\" + user.getName() + "\\" + snap.getName() + "\\" + 
-                                    idx3, String.valueOf(inv.getAmount()));
-                            p.setProperty("IDamage\\" + user.getName() + "\\" + snap.getName() + "\\" + 
-                                    idx3, String.valueOf(inv.getDurability()));
-                            p.setProperty("IEnchant\\" + user.getName() + "\\" + snap.getName() + "\\" + 
-                                    idx3, String.valueOf(inv.getEnchantments().size()));
+                            p.setProperty("IType\\" + user.getName() + "\\" + snap.getName() + "\\"
+                                    + idx3, String.valueOf(inv.getTypeId()));
+                            p.setProperty("IAmount\\" + user.getName() + "\\" + snap.getName() + "\\"
+                                    + idx3, String.valueOf(inv.getAmount()));
+                            p.setProperty("IDamage\\" + user.getName() + "\\" + snap.getName() + "\\"
+                                    + idx3, String.valueOf(inv.getDurability()));
+                            p.setProperty("IEnchant\\" + user.getName() + "\\" + snap.getName() + "\\"
+                                    + idx3, String.valueOf(inv.getEnchantments().size()));
                             int idx4 = 0;
                             for (Iterator<Enchantment> it = inv.getEnchantments().keySet().iterator(); it.hasNext();) {
                                 Enchantment ench = it.next();
-                                p.setProperty("IEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName() + 
-                                        "\\" + idx4, String.valueOf(ench.getName()));
-                                p.setProperty("IEnchantLevel\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName() + 
-                                        "\\" + idx4, String.valueOf(inv.getEnchantmentLevel(ench)));
+                                p.setProperty("IEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName()
+                                        + "\\" + idx4, String.valueOf(ench.getName()));
+                                p.setProperty("IEnchantLevel\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName()
+                                        + "\\" + idx4, String.valueOf(inv.getEnchantmentLevel(ench)));
                                 idx4++;
                             }
                         } else {
@@ -212,21 +255,21 @@ public class Admin extends JavaPlugin {
                     for (int idx3 = 0; idx3 < snap.getArmor().length; idx3++) {
                         ItemStack armor = snap.getArmor()[idx3];
                         if (armor != null) {
-                            p.setProperty("AType\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3, 
+                            p.setProperty("AType\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3,
                                     String.valueOf(armor.getTypeId()));
-                            p.setProperty("AAmount\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3, 
+                            p.setProperty("AAmount\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3,
                                     String.valueOf(armor.getAmount()));
-                            p.setProperty("ADamage\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3, 
+                            p.setProperty("ADamage\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3,
                                     String.valueOf(armor.getDurability()));
-                            p.setProperty("AEnchant\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3, 
+                            p.setProperty("AEnchant\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3,
                                     String.valueOf(armor.getEnchantments().size()));
                             int idx4 = 0;
                             for (Iterator<Enchantment> it = armor.getEnchantments().keySet().iterator(); it.hasNext();) {
                                 Enchantment ench = it.next();
-                                p.setProperty("AEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName() + 
-                                        "\\" + idx4, String.valueOf(ench.getName()));
-                                p.setProperty("AEnchantLevel\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName() + 
-                                        "\\" + idx4, String.valueOf(armor.getEnchantmentLevel(ench)));
+                                p.setProperty("AEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName()
+                                        + "\\" + idx4, String.valueOf(ench.getName()));
+                                p.setProperty("AEnchantLevel\\" + user.getName() + "\\" + idx3 + "\\" + snap.getName()
+                                        + "\\" + idx4, String.valueOf(armor.getEnchantmentLevel(ench)));
                                 idx4++;
                             }
                         } else {
@@ -262,6 +305,9 @@ public class Admin extends JavaPlugin {
         }
     }
 
+    /**
+     * Loads all Snapshots from file to RAM.
+     */
     public void loadSnapshots() {
         File file = new File(folder + "/snapshots.properties");
         if (!file.exists()) {
@@ -275,7 +321,7 @@ public class Admin extends JavaPlugin {
             for (int idx = 0; idx < Integer.parseInt(p.getProperty("User Count")); idx++) {
                 User user = new User(p.getProperty("User\\" + idx));
                 users.add(user);
-                user.setAdmin(Boolean.parseBoolean(p.getProperty("Admin\\" +idx)));
+                user.setAdmin(Boolean.parseBoolean(p.getProperty("Admin\\" + idx)));
                 int snapCount = Integer.parseInt(p.getProperty("Snapshot Count\\" + user.getName()));
                 for (int idx2 = 0; idx2 < snapCount; idx2++) {
                     int invSize = Integer.parseInt(p.getProperty("Inventory Size\\" + user.getName() + "\\" + idx2));
@@ -284,14 +330,14 @@ public class Admin extends JavaPlugin {
                     for (int idx3 = 0; idx3 < invSize; idx3++) {
                         if (!p.getProperty("IType\\" + user.getName() + "\\" + name + "\\" + idx3).equals("null")) {
                             inv[idx3] = new ItemStack(
-                                    Integer.parseInt(p.getProperty("IType\\" + user.getName() + "\\" + name + "\\" + idx3)), 
-                                    Integer.parseInt(p.getProperty("IAmount\\" + user.getName() + "\\" + name + "\\" + idx3)), 
+                                    Integer.parseInt(p.getProperty("IType\\" + user.getName() + "\\" + name + "\\" + idx3)),
+                                    Integer.parseInt(p.getProperty("IAmount\\" + user.getName() + "\\" + name + "\\" + idx3)),
                                     Short.parseShort(p.getProperty("IDamage\\" + user.getName() + "\\" + name + "\\" + idx3)));
                             for (int idx4 = 0; idx4 < Integer.parseInt(p.getProperty("IEnchant\\" + user.getName() + "\\" + name + "\\" + idx3)); idx4++) {
                                 inv[idx3].addEnchantment(Enchantment.getByName(
-                                        p.getProperty("IEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)), 
-                                        Integer.parseInt(p.getProperty("IEnchantLevel" + "\\" +
-                                        user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)));
+                                        p.getProperty("IEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)),
+                                        Integer.parseInt(p.getProperty("IEnchantLevel" + "\\"
+                                        + user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)));
                             }
                         }
                     }
@@ -300,14 +346,14 @@ public class Admin extends JavaPlugin {
                     for (int idx3 = 0; idx3 < armorSize; idx3++) {
                         if (!p.getProperty("AType\\" + user.getName() + "\\" + name + "\\" + idx3).equals("null")) {
                             armor[idx3] = new ItemStack(
-                                    Integer.parseInt(p.getProperty("AType\\" + user.getName() + "\\" + name + "\\" + idx3)), 
-                                    Integer.parseInt(p.getProperty("AAmount\\" + user.getName() + "\\" + name + "\\" + idx3)), 
+                                    Integer.parseInt(p.getProperty("AType\\" + user.getName() + "\\" + name + "\\" + idx3)),
+                                    Integer.parseInt(p.getProperty("AAmount\\" + user.getName() + "\\" + name + "\\" + idx3)),
                                     Short.parseShort(p.getProperty("ADamage\\" + user.getName() + "\\" + name + "\\" + idx3)));
                             for (int idx4 = 0; idx4 < Integer.parseInt(p.getProperty("AEnchant\\" + user.getName() + "\\" + name + "\\" + idx3)); idx4++) {
                                 armor[idx3].addEnchantment(Enchantment.getByName(
-                                        p.getProperty("AEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)), 
-                                        Integer.parseInt(p.getProperty("AEnchantLevel" + "\\" + 
-                                        user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)));
+                                        p.getProperty("AEnchantment\\" + user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)),
+                                        Integer.parseInt(p.getProperty("AEnchantLevel" + "\\"
+                                        + user.getName() + "\\" + idx3 + "\\" + name + "\\" + idx4)));
                             }
                         }
                     }
@@ -323,11 +369,11 @@ public class Admin extends JavaPlugin {
                             gm = GameMode.ADVENTURE;
                             break;
                     }
-                    Snapshot snap = new Snapshot(user.getName(), name, inv, armor, 
-                            Float.parseFloat(p.getProperty("Exp\\" + user.getName() + "\\" + idx2)), 
-                            Integer.parseInt(p.getProperty("Level\\" + user.getName() + "\\" + idx2)), gm, 
-                            Float.parseFloat(p.getProperty("Exhaustion\\" + user.getName() + "\\" + idx2)), 
-                            Integer.parseInt(p.getProperty("Food Level\\" + user.getName() + "\\" + idx2)), 
+                    Snapshot snap = new Snapshot(user.getName(), name, inv, armor,
+                            Float.parseFloat(p.getProperty("Exp\\" + user.getName() + "\\" + idx2)),
+                            Integer.parseInt(p.getProperty("Level\\" + user.getName() + "\\" + idx2)), gm,
+                            Float.parseFloat(p.getProperty("Exhaustion\\" + user.getName() + "\\" + idx2)),
+                            Integer.parseInt(p.getProperty("Food Level\\" + user.getName() + "\\" + idx2)),
                             Float.parseFloat(p.getProperty("Saturation\\" + user.getName() + "\\" + idx2)));
                     user.addSnapshot(snap);
                 }
