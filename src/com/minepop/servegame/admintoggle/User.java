@@ -10,6 +10,8 @@ public class User {
 
     private String name;
     private ArrayList<Snapshot> snapshots = new ArrayList<>(0);
+    private Snapshot current = null;
+    private Snapshot previous = null;
     private boolean admin = false;
 
     /**
@@ -104,6 +106,42 @@ public class User {
             }
         }
         return false;
+    }
+
+    /**
+     * Sets the current Snapshot to the given Snapshot.
+     * 
+     * @param snap The Snapshot the current Snapshot will be set to
+     */
+    public void setCurrentSnapshot(Snapshot snap) {
+        current = snap;
+    }
+
+    /**
+     * Sets the last Snapshot the User had loaded to the given Snapshot.
+     * 
+     * @param snap The last Snapshot the User had loaded
+     */
+    public void setLastSnapshot(Snapshot snap) {
+        previous = snap;
+    }
+
+    /**
+     * Returns the current Snapshot the User has loaded.
+     * 
+     * @return The current Snapshot the User has loaded
+     */
+    public Snapshot getCurrentSnapshot() {
+        return current;
+    }
+
+    /**
+     * Returns the last Snapshot the User had loaded.
+     * 
+     * @return The last Snapshot the User had loaded
+     */
+    public Snapshot getLastSnapshot() {
+        return previous;
     }
 
     /**

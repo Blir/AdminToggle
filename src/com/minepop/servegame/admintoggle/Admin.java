@@ -130,6 +130,15 @@ public class Admin extends JavaPlugin {
                 }
                 player.sendMessage("Admin mode is " + (user.isAdmin() ? "enabled." : "disabled."));
                 return true;
+            case "adminundo":
+            case "adundo":
+                if (args.length != 0) {
+                    return false;
+                }
+                if (revertSnapshot(user, player)) {
+                    player.sendMessage("Snapshot reverted.");
+                }
+                return true;
         }
         return false;
     }
@@ -197,6 +206,8 @@ public class Admin extends JavaPlugin {
             player.sendMessage("The snapshot " + name + " doesn't exist!");
             return false;
         }
+        user.setLastSnapshot(user.getCurrentSnapshot());
+        user.setCurrentSnapshot(snap);
         player.getInventory().setContents(snap.getInv());
         player.getInventory().setArmorContents(snap.getArmor());
         player.setGameMode(snap.getGameMode());
@@ -208,6 +219,22 @@ public class Admin extends JavaPlugin {
         return true;
     }
 
+    public boolean revertSnapshot(User user, Player player) {
+        Snapshot snap = user.getLastSnapshot();
+        if (snap == null) {
+            player.sendMessage("Your last snapshot is missing.");
+            return false;
+        }
+        player.getInventory().setContents(snap.getInv());
+        player.getInventory().setArmorContents(snap.getArmor());
+        player.setGameMode(snap.getGameMode());
+        player.setExp(snap.getExp());
+        player.setLevel(snap.getLevel());
+        player.setExhaustion(snap.getExhaustion());
+        player.setFoodLevel(snap.getFoodLevel());
+        player.setSaturation(snap.getSaturation());
+        return true;
+    }
     /**
      * Saves all Snapshots to file.
      */
