@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.0
+version: 1.2.1
 author: Blir
 commands:
   adminswitch:

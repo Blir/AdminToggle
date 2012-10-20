@@ -1,6 +1,8 @@
 package com.minepop.servegame.admintoggle;
 
 import java.io.*;
+import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.logging.Level;
 import org.bukkit.GameMode;
@@ -31,6 +33,29 @@ public class Admin extends JavaPlugin {
         }
         folder = file.getPath();
         loadSnapshots();
+        File destFile = new File(folder + "/README.txt");
+        if (!destFile.exists()) {
+            InputStream sourceFile = getResource("README.txt");
+            Scanner sourceFileReader = null;
+            PrintWriter destFileWriter = null;
+            try {
+                sourceFileReader = new Scanner(sourceFile);
+                destFileWriter = new PrintWriter(destFile);
+                while (sourceFileReader.hasNext()) {
+                    destFileWriter.println(sourceFileReader.nextLine());
+                }
+            } catch (Exception e) {
+                getLogger().warning("Error copying readme.txt");
+            } finally {
+                try {
+                    sourceFileReader.close();
+                    destFileWriter.close();
+                    sourceFile.close();
+                } catch (Exception e) {
+                    getLogger().warning("Error closing streams after copying readme.txt");
+                }
+            }
+        }
     }
 
     /**
@@ -388,7 +413,7 @@ public class Admin extends JavaPlugin {
                 users.add(user);
                 try {
                     user.setAdminMode(Boolean.parseBoolean(p.getProperty("Admin\\" + idx)));
-                } catch (Exception  e) {
+                } catch (Exception e) {
                     getLogger().log(Level.SEVERE, "Error loading {0}''s admin mode setting, set to false",
                             user.getName());
                 }

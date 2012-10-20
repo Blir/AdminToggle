@@ -15,8 +15,6 @@ The project on Bukkit Dev: http://dev.bukkit.org/server-mods/creative-tools/
 
 Blir's Sponsored Minecraft Server: http://minepop.servegame.com:25567/Public/index.html
 
-Download link: https://dl.dropbox.com/u/103112496/plugins/CreativeTools.jar
-
 Commands:
     AdminSwitch:
         The primary feature of the plugin, allows you to switch between whatever
