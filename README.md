@@ -27,7 +27,7 @@ Commands:
         and then load the Snapshot "legit."
 
         Usage: /AdminSwitch
-        Aliases: asdf, 
+        Aliases: asdf, adswitch
 
     AdminSaveRam:
         Saves your current set-up to RAM, with the name that you specify. If a
