@@ -1,56 +1,61 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.1.2
+version: 1.2.0
 author: Blir
 commands:
   adminswitch:
     description: Toggles admin mode.
     usage: /<command>
     permission: admintoggle.adminswitch
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: [asdf, adswitch]
   adminsaveram:
     description: Creates a new save.
     usage: /<command> [save name] [overwrite:true/false]
     permission: admintoggle.adminsaveram
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: adram
   adminload:
     description: Loads the specified save.
     usage: /<command> [save name]
     permission: admintoggle.adminload
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: adload
   adminlistsnapshots:
     description: Lists the current snapshots.
     usage: /<command>
     permission: admintoggle.adminlistsnapshots
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: adlist
   admindelete:
     description: Deletes the specified save.
     usage: /<command> [save name]
     permission: admintoggle.admindelete
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: addel
   adminsavefile:
     description: Saves the snapshots.
     usage: /<command>
     permission: admintoggle.adminsavefile
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: adfile
   admincheck:
     description: Returns if admin mode is currently enabled.
     usage: /<command>
     permission: admintoggle.admincheck
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: adcheck
   adminundo:
     description: Reverts back to your previous snapshot.
     usage: /<command>
     permission: admintoggle.adminundo
-    permission-message: You must be an admin to use this command.
+    permission-message: You don't have permission to use that command.
     aliases: adundo
+  admindeleteall:
+    description: Deletes all snapshots.
+    usage: /<command> CONFIRM
+    permission: admintoggle.admindeleteall
+    permission-message: You don't have permission to use that command.
 permissions:
   admintoggle.*:
     description: Gives full access to AdminToggle.
@@ -64,3 +69,4 @@ permissions:
       admintoggle.adminsavefile: true
       admintoggle.admincheck: true
       admintoggle.adminundo: true
+      admintoggle.admindeleteall: true
