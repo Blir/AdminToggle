@@ -224,13 +224,8 @@ public class Snapshot {
         this.sat = sat;
     }
 
-    /**
-     * Clones the Snapshot.
-     *
-     * @return The clone of the Snapshot
-     */
     @Override
     public Snapshot clone() {
-        return new Snapshot(user, name, inv, armor, exp, level, gm, ex, food, sat);
+        return this.clone();
     }
 }
