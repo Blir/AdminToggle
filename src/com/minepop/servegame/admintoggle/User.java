@@ -9,10 +9,11 @@ import java.util.ArrayList;
 public class User {
 
     private String name;
-    private ArrayList<Snapshot> snapshots = new ArrayList<>(0);
-    private Snapshot current = null;
-    private Snapshot previous = null;
-    private boolean admin = false;
+    private ArrayList<Snapshot> snaps = new ArrayList<>(0);
+    private Snapshot currentSnap = null;
+    private ArrayList<Snapshot> snapLog = new ArrayList<>(0);
+    private int snapLogIdx = 0;
+    private boolean adminMode = false;
 
     /**
      * Creates a new User with the given name.
@@ -40,7 +41,7 @@ public class User {
      */
     public Snapshot addSnapshot(String name) {
         Snapshot snap = new Snapshot(this.name, name);
-        snapshots.add(snap);
+        snaps.add(snap);
         return snap;
     }
 
@@ -50,7 +51,7 @@ public class User {
      * @param snap The Snapshot to be added
      */
     public void addSnapshot(Snapshot snap) {
-        snapshots.add(snap);
+        snaps.add(snap);
     }
 
     /**
@@ -59,7 +60,7 @@ public class User {
      * @return The Snapshots
      */
     public ArrayList<Snapshot> getSnapshots() {
-        return snapshots;
+        return snaps;
     }
 
     /**
@@ -69,7 +70,7 @@ public class User {
      * @return The Snapshot
      */
     public Snapshot getSnapshot(String name) {
-        for (Snapshot snap : snapshots) {
+        for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
                 return snap;
             }
@@ -84,9 +85,9 @@ public class User {
      * @return true if a Snapshot was removed
      */
     public boolean removeSnapshot(String name) {
-        for (Snapshot snap : snapshots) {
+        for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
-                snapshots.remove(snap);
+                snaps.remove(snap);
                 return true;
             }
         }
@@ -100,7 +101,7 @@ public class User {
      * @return true if it exists
      */
     public boolean snapshotExists(String name) {
-        for (Snapshot snap : snapshots) {
+        for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
                 return true;
             }
@@ -109,39 +110,38 @@ public class User {
     }
 
     /**
-     * Sets the current Snapshot to the given Snapshot.
-     * 
-     * @param snap The Snapshot the current Snapshot will be set to
+     * Logs a Snapshot to the Snapshot log, sets the current Snapshot, and
+     * resets the Snapshot log index.
+     *
+     * @param snap The Snapshot to be logged
+     * @param snap2 The Snapshot to be set to current
      */
-    public void setCurrentSnapshot(Snapshot snap) {
-        current = snap;
+    public void logSnapshot(Snapshot snap) {
+        if (currentSnap != null) {
+            snapLog.add(currentSnap.clone());
+        }
+        snapLogIdx = snapLog.size() - 1;
+        currentSnap = snap;
     }
 
     /**
-     * Sets the last Snapshot the User had loaded to the given Snapshot.
-     * 
-     * @param snap The last Snapshot the User had loaded
+     * Returns the last Snapshot for the User.
+     *
+     * @return The last Snapshot for the User
      */
-    public void setLastSnapshot(Snapshot snap) {
-        previous = snap;
+    public Snapshot revertSnapshot() {
+        if (snapLogIdx < 0 || snapLogIdx >= snapLog.size()) {
+            return null;
+        }
+        snapLogIdx--;
+        return snapLog.get(snapLogIdx + 1);
     }
-
+    
     /**
-     * Returns the current Snapshot the User has loaded.
-     * 
-     * @return The current Snapshot the User has loaded
+     * Clears the Snapshots for the User.
      */
-    public Snapshot getCurrentSnapshot() {
-        return current;
-    }
-
-    /**
-     * Returns the last Snapshot the User had loaded.
-     * 
-     * @return The last Snapshot the User had loaded
-     */
-    public Snapshot getLastSnapshot() {
-        return previous;
+    public void clearSnapshots() {
+        snaps.clear();
     }
 
     /**
@@ -149,8 +149,8 @@ public class User {
      *
      * @return The value of admin, true if admin mode is enabled
      */
-    public boolean isAdmin() {
-        return admin;
+    public boolean isAdminModeEnabled() {
+        return adminMode;
     }
 
     /**
@@ -158,9 +158,9 @@ public class User {
      *
      * @return The value of admin, true if admin mode is enabled
      */
-    public boolean invertAdmin() {
-        admin = !admin;
-        return admin;
+    public boolean invertAdminMode() {
+        adminMode = !adminMode;
+        return adminMode;
     }
 
     /**
@@ -169,8 +169,8 @@ public class User {
      * @param admin The value admin will be set to
      * @return The value of admin, true if admin mode is enabled
      */
-    public boolean setAdmin(boolean admin) {
-        this.admin = admin;
-        return this.admin;
+    public boolean setAdminMode(boolean adminMode) {
+        this.adminMode = adminMode;
+        return this.adminMode;
     }
 }
