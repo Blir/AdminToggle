@@ -16,7 +16,9 @@ Blir's Sponsored Minecraft Server: http://minepop.servegame.com:25567/Public/ind
 Download link: https://dl.dropbox.com/u/103112496/plugins/AdminToggle.jar
 
 Commands:
+
     AdminSwitch:
+
         The primary feature of the plugin, allows you to switch between whatever
         Snapshots are saved as "admin" and "legit." Admin mode is disabled by
         default the first time you use the plugin. When you enable admin mode,
@@ -30,6 +32,7 @@ Commands:
         Aliases: asdf, adswitch
 
     AdminSaveRam:
+
         Saves your current set-up to RAM, with the name that you specify. If a
         Snapshot with the name you specify already exists, and you didn't put
         true for overwrite, then nothing will happen. If you put true for over-
@@ -42,6 +45,7 @@ Commands:
         Aliases: adram
 
     AdminSaveFile:
+
         Saves all Snapshots currently in RAM to the snapshots.properties file,
         the file that the plugin reads from upon being enabled to load Snapshots
         and Users. Use of this command isn't normally necessary as the plugin 
@@ -51,6 +55,7 @@ Commands:
         Aliases: adfile
 
     AdminLoad:
+
         Loads the specified Snapshot from RAM. If a Snapshot doesn't exist with
         the name you supply, no Snapshot will be loaded.
 
@@ -58,18 +63,21 @@ Commands:
         Aliases: adload
 
     AdminListSnapshots:
+
         Lists all current Snapshots saved to your User.
 
         Usage: /AdminListSnapshots
         Aliases: adlist
 
     AdminDelete:
+
         Deletes the Snapshot with the specified name if it exists.
 
         Usage: /AdminDelete [Snapshot name]
         Aliases: addel
 
     AdminDeleteAll:
+
         Deletes all Snapshots for your User. Use caution, Snapshots are
         permanently lost. You must type confirm in all capital letters to con-
         firm this action. Likewise, there are no shorter aliases to prevent
@@ -79,6 +87,7 @@ Commands:
         Aliases: None
 
     AdminUndo:
+
         Undoes the last Snapshot load. A convenience command, doesn't do any-
         thing that you can't do with /AdminLoad.
 
@@ -86,6 +95,7 @@ Commands:
         Aliases: adundo
 
     AdminCheck:
+
         Returns your current admin mode setting. For the forgetful ones.
 
         Usage: /AdminCheck
