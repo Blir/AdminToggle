@@ -9,8 +9,6 @@ between saved inventory set-ups (along with armor and more), which I have
 dubbed with the name "Snapshots," which is how you will see them addressed
 in this plugin.
 
-The source code on GitHub: https://github.com/Blir/AdminToggle
-
 The project on Bukkit Dev: http://dev.bukkit.org/server-mods/creative-tools/
 
 Blir's Sponsored Minecraft Server: http://minepop.servegame.com:25567/Public/index.html
