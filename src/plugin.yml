@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.2
+version: 1.2.1
 author: Blir
 commands:
   adminswitch:
@@ -11,7 +11,7 @@ commands:
     aliases: [asdf, adswitch]
   adminsaveram:
     description: Creates a new save.
-    usage: /<command> [save name]
+    usage: /<command> [save name] [overwrite:true/false]
     permission: admintoggle.adminsaveram
     permission-message: You don't have permission to use that command.
     aliases: adram
@@ -58,6 +58,8 @@ commands:
     permission-message: You don't have permission to use that command.
 permissions:
   admintoggle.*:
+    description: Gives full access to AdminToggle.
+    default: false
     children:
       admintoggle.adminswitch: true
       admintoggle.adminsaveram: true
@@ -68,21 +70,3 @@ permissions:
       admintoggle.admincheck: true
       admintoggle.adminundo: true
       admintoggle.admindeleteall: true
-  admintoggle.adminswitch:
-    description: Allows use of the /adminswitch command.
-  admintoggle.adminsaveram:
-    description: Allows use of the /adsaveram command.
-  admintoggle.adminload:
-    description: Allows use of the /adminload command.
-  admintoggle.adminlistsnapshots:
-    description: Allows use of the /adminlistsnapshots command.
-  admintoggle.admindelete:
-    description: Allows use of the /admindelete command.
-  admintoggle.adminsavefile:
-    description: Allows use of the /adminsavefile command.
-  admintoggle.admincheck:
-    description: Allows use of the /admincheck command.
-  admintoggle.adminundo:
-    description: Allows use of the /adminundo command.
-  admintoggle.admindeleteall:
-    description: Allows use of the /admindeleteall command.
