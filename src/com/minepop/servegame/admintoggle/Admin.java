@@ -8,6 +8,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,7 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author Blir
  */
-public class Admin extends JavaPlugin {
+public class Admin extends JavaPlugin implements Listener {
 
     private ArrayList<User> users = new ArrayList<>(1);
     private String folder;
@@ -25,6 +29,7 @@ public class Admin extends JavaPlugin {
      */
     @Override
     public void onEnable() {
+        getServer().getPluginManager().registerEvents(this, this);
         File file = getDataFolder();
         if (!file.isDirectory()) {
             file.mkdir();
@@ -73,20 +78,23 @@ public class Admin extends JavaPlugin {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("You must be a player to use this plugin!");
-            return true;
+        User user = null;
+        Player player = null;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+            user = getUser(player.getName());
         }
 
-        Player player = (Player) sender;
-        User user = getUser(player.getName());
+
         String action = cmd.getName().toLowerCase();
         switch (action) {
             case "adminswitch":
             case "asdf":
             case "adswitch":
-                if (args.length != 0) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 0) {
                     return false;
                 }
                 if (user.isAdminModeEnabled()) {
@@ -108,18 +116,38 @@ public class Admin extends JavaPlugin {
                 return true;
             case "adminsaveram":
             case "adram":
-                if (args.length != 2 || !(args[1].equalsIgnoreCase("true") || args[1].equalsIgnoreCase("false"))) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                } else if (args.length != 1) {
                     return false;
                 }
-                if (saveSnapshot(user, args[0], player, Boolean.parseBoolean(args[1].toLowerCase()))) {
+                if (saveSnapshot(user, args[0], player, false)) {
                     player.sendMessage("Snapshot \"" + args[0] + "\" saved!");
                 } else {
                     player.sendMessage("The snapshot \"" + args[0] + "\" already exists!");
                 }
                 return true;
+            case "adminsaveramoverwrite":
+            case "adramo":
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 2) {
+                    return false;
+                }
+                if (saveSnapshot(user, args[0], player, true)) {
+                    player.sendMessage("Snapshot \"" + args[0] + "\" overwritten!");
+                } else {
+                    player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist to be overwritten! Snapshot created.");
+                    saveSnapshot(user, args[0], player, false);
+                }
+                return true;
             case "adminload":
             case "adload":
-                if (args.length != 1) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 1) {
                     return false;
                 }
                 if (loadSnapshot(user, args[0], player)) {
@@ -130,7 +158,10 @@ public class Admin extends JavaPlugin {
                 return true;
             case "adminlistsnapshots":
             case "adlist":
-                if (args.length != 0) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 0) {
                     return false;
                 }
                 if (!user.getSnapshots().isEmpty()) {
@@ -144,7 +175,10 @@ public class Admin extends JavaPlugin {
                 return true;
             case "admindelete":
             case "addel":
-                if (args.length != 1) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 1) {
                     return false;
                 }
                 if (user.removeSnapshot(args[0])) {
@@ -159,18 +193,24 @@ public class Admin extends JavaPlugin {
                     return false;
                 }
                 saveSnapshots();
-                player.sendMessage("Snapshots saved.");
+                sender.sendMessage("Snapshots saved.");
                 return true;
             case "admincheck":
             case "adcheck":
-                if (args.length != 0) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 0) {
                     return false;
                 }
                 player.sendMessage("Admin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
                 return true;
             case "adminundo":
             case "adundo":
-                if (args.length != 0) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 0) {
                     return false;
                 }
                 if (revertSnapshot(user, player)) {
@@ -180,7 +220,10 @@ public class Admin extends JavaPlugin {
                 }
                 return true;
             case "admindeleteall":
-                if (args.length != 1 || !args[0].equals("CONFIRM")) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 1 || !args[0].equals("CONFIRM")) {
                     return false;
                 }
                 user.clearSnapshots();
@@ -209,6 +252,21 @@ public class Admin extends JavaPlugin {
     }
 
     /**
+     * Returns wether or not the Player with the given name is registered in the plugin.
+     * 
+     * @param name The name of the Player to check if they're registered
+     * @return true if the Player is registered
+     */
+    public boolean isUserRegistered(String name) {
+        for (User user : users) {
+            if (user.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Saves a Snapshot to RAM.
      *
      * @param user The User to save the Snapshot to
@@ -219,14 +277,19 @@ public class Admin extends JavaPlugin {
      * @return true if the Snapshot was saved.
      */
     public boolean saveSnapshot(User user, String name, Player player, boolean overwrite) {
-        if (user.snapshotExists(name) && !overwrite) {
-            return false;
-        }
         Snapshot snap;
-        if (user.snapshotExists(name) && overwrite) {
-            snap = user.getSnapshot(name);
+        if (overwrite) {
+            if (user.snapshotExists(name)) {
+                snap = user.getSnapshot(name);
+            } else {
+                return false;
+            }
         } else {
-            snap = user.addSnapshot(name);
+            if (user.snapshotExists(name)) {
+                return false;
+            } else {
+                snap = user.addSnapshot(name);
+            }
         }
         snap.setInv(player.getInventory().getContents(), player.getInventory().getArmorContents());
         snap.setGameMode(player.getGameMode());
@@ -296,7 +359,6 @@ public class Admin extends JavaPlugin {
                 p.setProperty("Snapshot Count\\" + user.getName(), String.valueOf(user.getSnapshots().size()));
                 for (int idx2 = 0; idx2 < user.getSnapshots().size(); idx2++) {
                     Snapshot snap = user.getSnapshots().get(idx2);
-                    p.setProperty("Inventory Size\\" + user.getName() + "\\" + idx2, String.valueOf(snap.getInv().length));
                     p.setProperty("Snapshot\\" + user.getName() + "\\" + idx2, snap.getName());
                     for (int idx3 = 0; idx3 < snap.getInv().length; idx3++) {
                         ItemStack inv = snap.getInv()[idx3];
@@ -322,7 +384,6 @@ public class Admin extends JavaPlugin {
                             p.setProperty("IType\\" + user.getName() + "\\" + snap.getName() + "\\" + idx3, "null");
                         }
                     }
-                    p.setProperty("Armor Size\\" + user.getName() + "\\" + idx2, String.valueOf(snap.getArmor().length));
                     for (int idx3 = 0; idx3 < snap.getArmor().length; idx3++) {
                         ItemStack armor = snap.getArmor()[idx3];
                         if (armor != null) {
@@ -556,6 +617,22 @@ public class Admin extends JavaPlugin {
             } catch (IOException e) {
                 getLogger().severe("Error closing input stream.");
             }
+        }
+    }
+
+    /**
+     * Called when a player joins the server.
+     * 
+     * @param evt The event that occurred
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerJoin(PlayerJoinEvent evt) {
+        if (!isUserRegistered(evt.getPlayer().getName()) && evt.getPlayer().hasPermission("admintoggle.*")) {
+            users.add(new User(evt.getPlayer().getName()));
+            evt.getPlayer().sendMessage("This is your first time using Admin Toggle. For instructions on");
+            evt.getPlayer().sendMessage("using this plugin you can view the read me file here:");
+            evt.getPlayer().sendMessage("https://github.com/Blir/AdminToggle - I hope you find this");
+            evt.getPlayer().sendMessage("plugin useful! :)");
         }
     }
 }
