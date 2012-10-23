@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.2
+version: 1.2.3
 author: Blir
 commands:
   adminswitch:
@@ -28,11 +28,17 @@ commands:
     permission-message: You don't have permission to use that command.
     aliases: adload
   adminlistsnapshots:
-    description: Lists the current snapshots.
+    description: Lists your current snapshots.
     usage: /<command>
     permission: admintoggle.adminlistsnapshots
     permission-message: You don't have permission to use that command.
     aliases: adlist
+  adminlistallsnapshots:
+    description: Lists all snapshots.
+    usage: /<command>
+    permission: admintoggle.adminlistallsnapshots
+    permission-message: You don't have permission to use that command
+    aliases: adlistall
   admindelete:
     description: Deletes the specified save.
     usage: /<command> [save name]
@@ -75,6 +81,7 @@ permissions:
       admintoggle.adminundo: true
       admintoggle.admindeleteall: true
       admintoggle.adminsaveramoverwrite: true
+      amintoggle.adminlistallsnapshots: true
   admintoggle.adminswitch:
     description: Allows use of the /adminswitch command.
   admintoggle.adminsaveram:
@@ -95,3 +102,5 @@ permissions:
     description: Allows use of the /admindeleteall command.
   admintoggle.adminsaveramoverwrite:
     description: Allows use of the /adminsaveramoverwrite command.
+  admintoggle.adminlistallsnapshots:
+    description: Allows use of the /adminlistallsnapshots command.

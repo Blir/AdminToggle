@@ -15,7 +15,7 @@ public class Snapshot {
     private ItemStack[] armor;
     private float exp;
     private int level;
-    private GameMode gm;
+    private GameMode gm = GameMode.SURVIVAL;
     private float ex;
     private int food;
     private float sat;

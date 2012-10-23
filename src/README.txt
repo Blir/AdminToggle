@@ -1,6 +1,6 @@
-|===============================ADMIN TOGGLE===============================|
+|=================================ADMIN TOGGLE=================================|
 
-Version 1.2.2 10/21/2012
+Version 1.2.3 10/23/2012
 
 By Blir
 
@@ -78,9 +78,12 @@ Commands:
         Aliases: adundo
 
     AdminCheck:
+
         Returns your current admin mode setting. For the forgetful ones.
 
         Usage: /AdminCheck
         Aliases: adcheck
 
 Notes: None of the commands are case-sensitive unless otherwise specified.
+
+Special thanks to LegendOfBrian for helping with the read me file. <3
