@@ -11,9 +11,9 @@ in this plugin.
 
 The project on Bukkit Dev: http://dev.bukkit.org/server-mods/creative-tools/
 
-Blir's Sponsored Minecraft Server: http://minepop.servegame.com:25567/Public/index.html
+Blir's Sponsored Minecraft Server: http://minepop.servegame.com
 
-Download link: https://dl.dropbox.com/u/103112496/plugins/AdminToggle.jar
+Download link: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/1.2.3/AdminToggle.jar
 
 Commands:
 
