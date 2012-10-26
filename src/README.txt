@@ -1,14 +1,16 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version 1.2.3 10/23/2012
+Version 1.2.3 10/25/2012
 
 By Blir
 
-AdminToggle is a Minecraft plugin intended for server admins to quickly toggle between two or more player profiles. These profiles (or "snapshots") contain the players inventory, equipped items, health, hunger, game mode, and exp.
+AdminToggle is a Minecraft plugin intended for server admins to quickly toggle
+between two or more player profiles. These profiles (or "snapshots") contain the
+players inventory, equipped items, health, hunger, game mode, and exp.
 
 The source code on GitHub: https://github.com/Blir/AdminToggle
 
-The project on Bukkit Dev: http://dev.bukkit.org/server-mods/creative-tools/
+The project on Dev Bukkit: Not yet.
 
 Blir's Sponsored Minecraft Server: http://minepop.servegame.com
 
@@ -16,73 +18,96 @@ Commands:
 
     AdminSwitch:
 
-        The primary feature of the plugin, allows you to switch between whatever snapshots are saved as "admin" and "legit." Admin mode is disabled by default the first time you use the plugin. When you enable admin mode, your current set-up is saved as "legit" and the plugin attempts to load the Snapshot "admin." You can create an admin inventory simply by entering "/adminsaveram admin". When you disable admin mode, the plugin will save your current set-up as "temp" to prevent accidental item loss, and then load the snapshot "legit."
+        The primary feature of the plugin, allows you to switch between whatever
+        snapshots are saved as "admin" and "legit." Admin mode is disabled by
+        default the first time you use the plugin. When you enable admin mode,
+        your current set-up is saved as "legit" and the plugin attempts to load
+        the Snapshot "admin." You can create an admin inventory simply by
+        entering "/snap admin". When you disable admin mode, the plugin
+        will save your current set-up as "temp" to help prevent accidental item 
+        loss, and then load the snapshot "legit."
 
         Usage: /AdminSwitch
         Aliases: asdf, adswitch
 
-    AdminSaveRam:
+    NewSnapshot:
 
         Saves your current profile to RAM, with the name that you specify.
 
-        Usage: /AdminSaveRam [Snapshot name]
-        Aliases: adram
+        Usage: /NewSnapshot [Snapshot name]
+        Aliases: snap
 
-    AdminSaveRamOverwrite:
+    OverwriteSnapshot:
 
         Overwrites the snapshot you specify with your current profile.
 
-        Usage: /AdminSaveRamOverwrite [Snapshot name]
-        Aliases: adramo
+        Usage: /OverwriteSnapshot [Snapshot name]
+        Aliases: osnap
 
-    AdminSaveFile:
+    SaveSnapshots:
 
-        Saves all snapshots currently in RAM to the snapshots.properties file, the file that the plugin reads from upon being enabled to load snapshots and users. Use of this command isn't normally necessary as the plugin  does this automatically every time the server is restarted or shut down.
+        Saves all snapshots currently in RAM to the snapshots.properties file,
+        the file that the plugin reads from upon being enabled to load snapshots
+        and users. Use of this command isn't normally necessary as the plugin
+        does this automatically every time the server is restarted or shut down,
+        unless there was a problem loading.
 
-        Usage: /AdminSaveFile
-        Aliases: adfile
+        Usage: /SaveSnapshots
+        Aliases: savesnaps
 
-    AdminLoad:
+    LoadSnapshot:
 
-        Loads the specified snapshot from RAM. If a snapshot doesn't exist with the name you supply, no snapshot will be loaded.
+        Loads the specified snapshot from RAM. If a snapshot doesn't exist with
+        the name you supply, no snapshot will be loaded.
 
-        Usage: /AdminLoad [Snapshot name]
-        Aliases: adload
+        Usage: /LoadSnapshot [Snapshot name]
+        Aliases: loadsnap, lsnap
 
-    AdminListSnapshots:
+    ListSnapshots:
 
         Lists all current snapshots saved to your User.
 
-        Usage: /AdminListSnapshots
-        Aliases: adlist
+        Usage: /ListSnapshots
+        Aliases: list, listsnaps, lsnaps
 
-    AdminDelete:
+    ListAllSnapshots:
+
+        Lists all current snapshots saved to all users.
+
+        Usage: /ListAllSnapshots
+        Aliases: listall, listallsnaps, lasnaps
+
+    DeleteSnapshot:
 
         Deletes the snapshot with the specified name if it exists.
 
-        Usage: /AdminDelete [Snapshot name]
-        Aliases: addel
+        Usage: /DeleteSnapshot [Snapshot name]
+        Aliases: dsnap, delsnap
 
-    AdminDeleteAll:
+    DeleteAllSnapshots:
 
-        Deletes all snapshots for your User. Use caution, snapshots are permanently lost. You must type confirm in all capital letters to con- firm this action. Likewise, there are no shorter aliases to prevent accidental loss of snapshots.
+        Deletes all snapshots for your User. Use caution, snapshots are
+        permanently lost. You must type confirm in all capital letters to
+        confirm this action. Likewise, there are no shorter aliases to prevent
+        accidental loss of snapshots.
 
-        Usage: /AdminDeleteAll CONFIRM
+        Usage: /DeleteAllSnapshots CONFIRM
         Aliases: None
 
-    AdminUndo:
+    UndoSnapshot:
 
-        Reverses the last snapshot load. A convenience command, doesn't do anything that you can't do with /AdminLoad.
+        Reverses the last snapshot load. A convenience command, doesn't do
+        much that you can't do with /LoadSnapshot.
 
-        Usage: /AdminUndo
-        Aliases: adundo
+        Usage: /UndoSnapshot
+        Aliases: usnap, undo
 
     AdminCheck:
 
         Returns your current admin mode setting. For the forgetful ones.
 
         Usage: /AdminCheck
-        Aliases: adcheck
+        Aliases: adcheck, ad
 
 Notes: None of the commands are case-sensitive unless otherwise specified.
 

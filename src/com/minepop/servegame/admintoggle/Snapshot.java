@@ -6,6 +6,8 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
+ * @version 1.2.3
+ * @since 10/25/12
  */
 public class Snapshot {
 
@@ -15,7 +17,7 @@ public class Snapshot {
     private ItemStack[] armor;
     private float exp;
     private int level;
-    private GameMode gm = GameMode.SURVIVAL;
+    private GameMode gm;
     private float ex;
     private int food;
     private float sat;

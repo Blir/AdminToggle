@@ -18,11 +18,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  *
  * @author Blir
+ * @version 1.2.3
+ * @since 10/25/12
  */
 public class Admin extends JavaPlugin implements Listener {
 
     private ArrayList<User> users = new ArrayList<>(1);
     private String folder;
+    private boolean loadedProperly = true;
 
     /**
      * Called when the plugin is enabled.
@@ -36,6 +39,20 @@ public class Admin extends JavaPlugin implements Listener {
         }
         folder = file.getPath();
         loadSnapshots();
+        if (!loadedProperly) {
+            getLogger().warning("Since the plugin did not load properly, it will"
+                    + "not save upon disabling. You will need to manually save or correct the error in "
+                    + "the file, if there is one. If this issue persists, contact Blir at "
+                    + "             http://dev.bukkit.org/profiles/Bliry/");
+            for (Player player : getServer().getOnlinePlayers()) {
+                if (player.hasPermission("admintoggle.*")) {
+                    player.sendMessage("Since the plugin did not load properly, it will not save upon "
+                    + "disabling. You will need to manually save or correct the error "
+                    + "in the file, if there is one. If this issue persists, contact Blir at "
+                    + "http://dev.bukkit.org/profiles/Bliry/");
+                }
+            }
+        }
         File destFile = new File(folder + "/README.txt");
         InputStream sourceFile = getResource("README.txt");
         Scanner sourceFileReader = null;
@@ -46,14 +63,14 @@ public class Admin extends JavaPlugin implements Listener {
             while (sourceFileReader.hasNext()) {
                 destFileWriter.println(sourceFileReader.nextLine());
             }
-        } catch (Exception e) {
+        } catch (IOException | NullPointerException e) {
             getLogger().warning("Error copying readme.txt");
         } finally {
             try {
                 sourceFileReader.close();
                 destFileWriter.close();
                 sourceFile.close();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 getLogger().warning("Error closing streams after copying readme.txt");
             }
         }
@@ -64,7 +81,11 @@ public class Admin extends JavaPlugin implements Listener {
      */
     @Override
     public void onDisable() {
-        saveSnapshots();
+        if (loadedProperly) {
+            saveSnapshots();
+        } else {
+            getLogger().warning("Not saving since the plugin didn't load properly.");
+        }
     }
 
     /**
@@ -85,9 +106,7 @@ public class Admin extends JavaPlugin implements Listener {
             user = getUser(player.getName());
         }
 
-
-        String action = cmd.getName().toLowerCase();
-        switch (action) {
+        switch (cmd.getName().toLowerCase()) {
             case "adminswitch":
             case "asdf":
             case "adswitch":
@@ -98,14 +117,14 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (user.isAdminModeEnabled()) {
-                    saveSnapshot(user, "temp", player, true);
+                    saveSnapshot(user, "temp", player, user.snapshotExists("temp"));
                     if (loadSnapshot(user, "legit", player)) {
                         player.sendMessage("Snapshot \"legit\" loaded!");
                     } else {
                         player.sendMessage("The snapshot \"legit\" doesn't exist!");
                     }
                 } else {
-                    saveSnapshot(user, "legit", player, true);
+                    saveSnapshot(user, "legit", player, user.snapshotExists("legit"));
                     if (loadSnapshot(user, "admin", player)) {
                         player.sendMessage("Snapshot \"admin\" loaded!");
                     } else {
@@ -114,8 +133,8 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 player.sendMessage("Admin mode " + (user.invertAdminMode() ? "enabled." : "disabled."));
                 return true;
-            case "adminsaveram":
-            case "adram":
+            case "newsnapshot":
+            case "snap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                 } else if (args.length != 1) {
@@ -127,12 +146,12 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("The snapshot \"" + args[0] + "\" already exists!");
                 }
                 return true;
-            case "adminsaveramoverwrite":
-            case "adramo":
+            case "overwritesnapshot":
+            case "osnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
-                } else if (args.length != 2) {
+                } else if (args.length != 1) {
                     return false;
                 }
                 if (saveSnapshot(user, args[0], player, true)) {
@@ -142,8 +161,9 @@ public class Admin extends JavaPlugin implements Listener {
                     saveSnapshot(user, args[0], player, false);
                 }
                 return true;
-            case "adminload":
-            case "adload":
+            case "loadsnapshot":
+            case "loadsnap":
+            case "lsnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -156,8 +176,10 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist!");
                 }
                 return true;
-            case "adminlistsnapshots":
-            case "adlist":
+            case "listsnapshots":
+            case "listsnaps":
+            case "list":
+            case "lsnaps":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -173,8 +195,9 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("You have no snapshots.");
                 }
                 return true;
-            case "admindelete":
-            case "addel":
+            case "deletesnapshot":
+            case "delsnap":
+            case "dsnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -187,8 +210,8 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist!");
                 }
                 return true;
-            case "adminsavefile":
-            case "adfile":
+            case "savesnapshots":
+            case "savesnaps":
                 if (args.length != 0) {
                     return false;
                 }
@@ -197,6 +220,7 @@ public class Admin extends JavaPlugin implements Listener {
                 return true;
             case "admincheck":
             case "adcheck":
+            case "ad":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -205,8 +229,9 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 player.sendMessage("Admin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
                 return true;
-            case "adminundo":
-            case "adundo":
+            case "undosnapshot":
+            case "undo":
+            case "usnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -219,7 +244,7 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("Your last snapshot could not be retrieved.");
                 }
                 return true;
-            case "admindeleteall":
+            case "deleteallsnapshots":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -229,8 +254,10 @@ public class Admin extends JavaPlugin implements Listener {
                 user.clearSnapshots();
                 player.sendMessage("Snapshots deleted.");
                 return true;
-            case "adminlistallsnapshots":
-            case "adlistall":
+            case "listallsnapshots":
+            case "listallsnaps":
+            case "listall":
+            case "lasnaps":
                 if (args.length != 0) {
                     return false;
                 }
@@ -238,10 +265,11 @@ public class Admin extends JavaPlugin implements Listener {
                 for (User target : users) {
                     if (target.getSnapshots().isEmpty()) {
                         sender.sendMessage(target.getName() + " has no snapshots.");
-                    }
-                    sender.sendMessage(target.getName() + "'s snapshots: ");
-                    for (Snapshot snap : target.getSnapshots()) {
-                        sender.sendMessage(snap.getName());
+                    } else {
+                        sender.sendMessage(target.getName() + "'s snapshots: ");
+                        for (Snapshot snap : target.getSnapshots()) {
+                            sender.sendMessage(snap.getName());
+                        }
                     }
                 }
                 return true;
@@ -268,8 +296,8 @@ public class Admin extends JavaPlugin implements Listener {
     }
 
     /**
-     * Returns wether or not the Player with the given name is registered in the
-     * plugin.
+     * Returns whether or not the Player with the given name is registered in
+     * the plugin.
      *
      * @param name The name of the Player to check if they're registered
      * @return true if the Player is registered
@@ -486,22 +514,23 @@ public class Admin extends JavaPlugin implements Listener {
             userCount = Integer.parseInt(p.getProperty("User Count"));
         } catch (NumberFormatException | NullPointerException e) {
             getLogger().log(Level.SEVERE, "Error loading user count");
+            loadedProperly = false;
             return;
         }
         for (int idx = 0; idx < userCount; idx++) {
-            User user;
-            try {
-                user = new User(p.getProperty("User/" + idx));
-            } catch (NullPointerException e) {
+            String userName = p.getProperty("User/" + idx);
+            if (userName == null) {
                 getLogger().log(Level.SEVERE, "Error loading user {0}",
                         idx);
+                loadedProperly = false;
                 continue;
             }
+            User user = new User(userName);
             users.add(user);
             try {
                 user.setAdminMode(Boolean.parseBoolean(p.getProperty("Admin/" + idx)));
             } catch (NumberFormatException | NullPointerException e) {
-                getLogger().log(Level.SEVERE, "Error loading {0}''s admin mode setting, set to false",
+                getLogger().log(Level.WARNING, "Error loading {0}''s admin mode setting, set to false",
                         user.getName());
             }
             int snapCount;
@@ -510,6 +539,7 @@ public class Admin extends JavaPlugin implements Listener {
             } catch (NumberFormatException | NullPointerException e) {
                 getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot Count",
                         user.getName());
+                loadedProperly = false;
                 continue;
             }
             for (int idx2 = 0; idx2 < snapCount; idx2++) {
@@ -518,6 +548,7 @@ public class Admin extends JavaPlugin implements Listener {
                 if (name == null) {
                     getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot at {1}",
                             new Object[]{user.getName(), idx2});
+                    loadedProperly = false;
                     continue;
                 }
                 for (int idx3 = 0; idx3 < 36; idx3++) {
@@ -525,6 +556,7 @@ public class Admin extends JavaPlugin implements Listener {
                     if (iType == null) {
                         getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: Inv at {2}",
                                 new Object[]{user.getName(), name, idx3});
+                        loadedProperly = false;
                         continue;
                     }
                     if (iType.equals("null")) {
@@ -538,6 +570,7 @@ public class Admin extends JavaPlugin implements Listener {
                     } catch (NumberFormatException | NullPointerException e) {
                         getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: Inv at {2}",
                                 new Object[]{user.getName(), name, idx3});
+                        loadedProperly = false;
                         continue;
                     }
                     int enchantCount;
@@ -546,6 +579,7 @@ public class Admin extends JavaPlugin implements Listener {
                     } catch (NullPointerException | NumberFormatException e) {
                         getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: CEInv at {2}",
                                 new Object[]{user.getName(), name, idx3});
+                        loadedProperly = false;
                         continue;
                     }
                     for (int idx4 = 0; idx4 < enchantCount; idx4++) {
@@ -557,6 +591,7 @@ public class Admin extends JavaPlugin implements Listener {
                         } catch (NullPointerException | NumberFormatException e) {
                             getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: EInv at {2}",
                                     new Object[]{user.getName(), name, idx4});
+                            loadedProperly = false;
                             continue;
                         }
                     }
@@ -567,6 +602,7 @@ public class Admin extends JavaPlugin implements Listener {
                     if (aType == null) {
                         getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: Armor at {2}",
                                 new Object[]{user.getName(), name, idx3});
+                        loadedProperly = false;
                         continue;
                     }
                     if (aType.equals("null")) {
@@ -580,6 +616,7 @@ public class Admin extends JavaPlugin implements Listener {
                     } catch (NumberFormatException | NullPointerException e) {
                         getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: Armor at {2}",
                                 new Object[]{user.getName(), name, idx3});
+                        loadedProperly = false;
                         continue;
                     }
                     int enchantCount;
@@ -588,6 +625,7 @@ public class Admin extends JavaPlugin implements Listener {
                     } catch (NullPointerException | NumberFormatException e) {
                         getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: CEArmor at {2}",
                                 new Object[]{user.getName(), name, idx3});
+                        loadedProperly = false;
                         continue;
                     }
                     for (int idx4 = 0; idx4 < enchantCount; idx4++) {
@@ -599,11 +637,12 @@ public class Admin extends JavaPlugin implements Listener {
                         } catch (NullPointerException | NumberFormatException e) {
                             getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: EArmor at {2}",
                                     new Object[]{user.getName(), name, idx3});
+                            loadedProperly = false;
                             continue;
                         }
                     }
                 }
-                GameMode gm = null;
+                GameMode gm;
                 try {
                     switch (p.getProperty(user.getName() + "/GameMode/" + name)) {
                         case "creative":
@@ -615,10 +654,16 @@ public class Admin extends JavaPlugin implements Listener {
                         case "adventure":
                             gm = GameMode.ADVENTURE;
                             break;
+                        default:
+                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
+                                    new Object[]{user.getName(), name});
+                            gm = GameMode.SURVIVAL;
+                            break;
                     }
                 } catch (NullPointerException e) {
-                    getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
                             new Object[]{user.getName(), name});
+                    gm = GameMode.SURVIVAL;
                 }
                 try {
                     Snapshot snap = new Snapshot(user.getName(), name, inv, armor,
@@ -631,13 +676,14 @@ public class Admin extends JavaPlugin implements Listener {
                 } catch (NullPointerException | NumberFormatException e) {
                     getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: ELEFS",
                             new Object[]{user.getName(), name});
+                    loadedProperly = false;
                 }
             }
         }
         try {
             fis.close();
         } catch (IOException e) {
-            getLogger().severe("Error closing input stream.");
+            getLogger().severe("Error closing input stream!");
         }
     }
 
@@ -650,10 +696,10 @@ public class Admin extends JavaPlugin implements Listener {
     public void onPlayerJoin(PlayerJoinEvent evt) {
         if (!isUserRegistered(evt.getPlayer().getName()) && evt.getPlayer().hasPermission("admintoggle.*")) {
             users.add(new User(evt.getPlayer().getName()));
-            evt.getPlayer().sendMessage("This is your first time using Admin Toggle. For instructions on");
-            evt.getPlayer().sendMessage("using this plugin you can view the read me file here:");
-            evt.getPlayer().sendMessage("https://github.com/Blir/AdminToggle - I hope you find this");
-            evt.getPlayer().sendMessage("plugin useful! :)");
+            evt.getPlayer().sendMessage("This is your first time using Admin Toggle. For instructions on"
+                    + "using this plugin you can view the read me file here:"
+                    + "https://github.com/Blir/AdminToggle - I hope you find this"
+                    + "plugin useful! :)");
         }
     }
 }

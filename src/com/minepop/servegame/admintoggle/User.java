@@ -5,6 +5,8 @@ import java.util.ArrayList;
 /**
  *
  * @author Blir
+ * @version 1.2.3
+ * @since 10/25/12
  */
 public class User {
 
@@ -114,7 +116,6 @@ public class User {
      * resets the Snapshot log index.
      *
      * @param snap The Snapshot to be logged
-     * @param snap2 The Snapshot to be set to current
      */
     public void logSnapshot(Snapshot snap) {
         if (currentSnap != null) {
