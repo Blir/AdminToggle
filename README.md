@@ -10,11 +10,15 @@ players inventory, equipped items, health, hunger, game mode, and exp.
 
 ==== Downloads: ====
 
+Current RB: v1.2.3
+
 v1.2.0: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/1.2.0/AdminToggle.jar
 
 v1.2.2: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/1.2.2/AdminToggle.jar
 
 v1.2.3: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/1.2.3/AdminToggle.jar
+
+v1.2.4: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/1.2.4/AdminToggle.jar
 
 The project on Dev Bukkit: TBA.
 
