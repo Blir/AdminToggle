@@ -3,6 +3,7 @@ package com.minepop.servegame.admintoggle;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,25 +14,40 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  *
  * @author Blir
- * @version 1.2.3
- * @since 10/25/12
+ * @version 1.2.5
+ * @since 10/30/12
  */
 public class Admin extends JavaPlugin implements Listener {
 
     private ArrayList<User> users = new ArrayList<>(1);
     private String folder;
     private boolean loadedProperly = true;
+    private final int README_VERSION = 1;
+    private boolean vault;
+    private Economy econ = null;
 
     /**
      * Called when the plugin is enabled.
      */
     @Override
     public void onEnable() {
+        vault = getServer().getPluginManager().isPluginEnabled("Vault");
+        if (vault) {
+            RegisteredServiceProvider<Economy> rsp;
+            rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+            if (rsp != null) {
+                econ = rsp.getProvider();
+            } else {
+                getLogger().warning("Failed to retrieve economy from Vault.");
+                vault = false;
+            }
+        }
         getServer().getPluginManager().registerEvents(this, this);
         File file = getDataFolder();
         if (!file.isDirectory()) {
@@ -46,20 +62,22 @@ public class Admin extends JavaPlugin implements Listener {
                     + "             http://dev.bukkit.org/profiles/Bliry/");
             for (Player player : getServer().getOnlinePlayers()) {
                 if (player.hasPermission("admintoggle.*")) {
-                    player.sendMessage("Since the plugin did not load properly, it will not save upon "
-                    + "disabling. You will need to manually save or correct the error "
-                    + "in the file, if there is one. If this issue persists, contact Blir at "
-                    + "http://dev.bukkit.org/profiles/Bliry/");
+                    player.sendMessage("Since AdminToggle did not load properly, it will not save upon "
+                            + "disabling. You will need to manually save or correct the error "
+                            + "in the file, if there is one. If this issue persists, contact Blir at "
+                            + "http://dev.bukkit.org/profiles/Bliry/");
                 }
             }
         }
-        File destFile = new File(folder + "/README.txt");
+        if (getConfig().getString("readme.version").equals(String.valueOf(README_VERSION))) {
+            return;
+        }
         InputStream sourceFile = getResource("README.txt");
         Scanner sourceFileReader = null;
         PrintWriter destFileWriter = null;
         try {
             sourceFileReader = new Scanner(sourceFile);
-            destFileWriter = new PrintWriter(destFile);
+            destFileWriter = new PrintWriter(new File(folder + "/README.txt"));
             while (sourceFileReader.hasNext()) {
                 destFileWriter.println(sourceFileReader.nextLine());
             }
@@ -74,6 +92,7 @@ public class Admin extends JavaPlugin implements Listener {
                 getLogger().warning("Error closing streams after copying readme.txt");
             }
         }
+        getConfig().set("readme.version", README_VERSION);
     }
 
     /**
@@ -86,6 +105,7 @@ public class Admin extends JavaPlugin implements Listener {
         } else {
             getLogger().warning("Not saving since the plugin didn't load properly.");
         }
+        saveConfig();
     }
 
     /**
@@ -118,14 +138,14 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 if (user.isAdminModeEnabled()) {
                     saveSnapshot(user, "temp", player, user.snapshotExists("temp"));
-                    if (loadSnapshot(user, "legit", player)) {
+                    if (loadSnapshot(user, "legit", player, null)) {
                         player.sendMessage("Snapshot \"legit\" loaded!");
                     } else {
                         player.sendMessage("The snapshot \"legit\" doesn't exist!");
                     }
                 } else {
                     saveSnapshot(user, "legit", player, user.snapshotExists("legit"));
-                    if (loadSnapshot(user, "admin", player)) {
+                    if (loadSnapshot(user, "admin", player, null)) {
                         player.sendMessage("Snapshot \"admin\" loaded!");
                     } else {
                         player.sendMessage("The snapshot \"admin\" doesn't exist!");
@@ -134,7 +154,7 @@ public class Admin extends JavaPlugin implements Listener {
                 player.sendMessage("Admin mode " + (user.invertAdminMode() ? "enabled." : "disabled."));
                 return true;
             case "newsnapshot":
-            case "snap":
+            case "newsnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                 } else if (args.length != 1) {
@@ -147,6 +167,7 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case "overwritesnapshot":
+            case "overwritesnap":
             case "osnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
@@ -170,16 +191,35 @@ public class Admin extends JavaPlugin implements Listener {
                 } else if (args.length != 1) {
                     return false;
                 }
-                if (loadSnapshot(user, args[0], player)) {
+                if (loadSnapshot(user, args[0], player, null)) {
                     player.sendMessage("Snapshot \"" + args[0] + "\" loaded!");
                 } else {
                     player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist!");
                 }
                 return true;
-            case "listsnapshots":
-            case "listsnaps":
-            case "list":
-            case "lsnaps":
+            case "loadothersnapshot":
+            case "loadothersnap":
+            case "losnap":
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage("You must be a player to use this command!");
+                    return true;
+                } else if (args.length != 2) {
+                    return false;
+                }
+                User target = getUser(args[0]);
+                if (target != null) {
+                    if (loadSnapshot(user, args[1], player, target)) {
+                        player.sendMessage(args[0] + "'s snapshot \"" + args[1] + "\" loaded!");
+                    } else {
+                        player.sendMessage("The user \"" + args[0] + "\" does not have the snapshot \"" + args[1] + ".\"");
+                    }
+                } else {
+                    player.sendMessage("The user \"" + args[0] + "\" doesn't exist or isn't registered.");
+                }
+                return true;
+            case "mysnapshots":
+            case "mysnaps":
+            case "mysnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -196,8 +236,12 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case "deletesnapshot":
+            case "deletesnap":
             case "delsnap":
             case "dsnap":
+            case "removesnashot":
+            case "removesnap":
+            case "rmsnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -212,6 +256,7 @@ public class Admin extends JavaPlugin implements Listener {
                 return true;
             case "savesnapshots":
             case "savesnaps":
+            case "savesnap":
                 if (args.length != 0) {
                     return false;
                 }
@@ -220,7 +265,7 @@ public class Admin extends JavaPlugin implements Listener {
                 return true;
             case "admincheck":
             case "adcheck":
-            case "ad":
+            case "adc":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
                     return true;
@@ -230,7 +275,9 @@ public class Admin extends JavaPlugin implements Listener {
                 player.sendMessage("Admin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
                 return true;
             case "undosnapshot":
-            case "undo":
+            case "undosnaps":
+            case "undosnap":
+            case "usnaps":
             case "usnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
@@ -262,12 +309,12 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 sender.sendMessage("All snapshots: ");
-                for (User target : users) {
-                    if (target.getSnapshots().isEmpty()) {
-                        sender.sendMessage(target.getName() + " has no snapshots.");
+                for (User regUser : users) {
+                    if (regUser.getSnapshots().isEmpty()) {
+                        sender.sendMessage(regUser.getName() + " has no snapshots.");
                     } else {
-                        sender.sendMessage(target.getName() + "'s snapshots: ");
-                        for (Snapshot snap : target.getSnapshots()) {
+                        sender.sendMessage(regUser.getName() + "'s snapshots: ");
+                        for (Snapshot snap : regUser.getSnapshots()) {
                             sender.sendMessage(snap.getName());
                         }
                     }
@@ -343,6 +390,9 @@ public class Admin extends JavaPlugin implements Listener {
         snap.setExhaustion(player.getExhaustion());
         snap.setFoodLevel(player.getFoodLevel());
         snap.setSaturation(player.getSaturation());
+        if (vault) {
+            snap.setBalance(econ.getBalance(player.getName()));
+        }
         return true;
     }
 
@@ -354,8 +404,13 @@ public class Admin extends JavaPlugin implements Listener {
      * @param player The Player to load the Snapshot to
      * @return true if the Snapshot was loaded
      */
-    public boolean loadSnapshot(User user, String name, Player player) {
-        Snapshot snap = user.getSnapshot(name);
+    public boolean loadSnapshot(User user, String name, Player player, User target) {
+        Snapshot snap;
+        if (target == null) {
+            snap = user.getSnapshot(name);
+        } else {
+            snap = target.getSnapshot(name);
+        }
         if (snap == null) {
             return false;
         }
@@ -368,6 +423,7 @@ public class Admin extends JavaPlugin implements Listener {
         player.setExhaustion(snap.getExhaustion());
         player.setFoodLevel(snap.getFoodLevel());
         player.setSaturation(snap.getSaturation());
+        setBalance(player.getName(), snap.getBalance());
         return true;
     }
 
@@ -384,7 +440,16 @@ public class Admin extends JavaPlugin implements Listener {
         player.setExhaustion(snap.getExhaustion());
         player.setFoodLevel(snap.getFoodLevel());
         player.setSaturation(snap.getSaturation());
+        setBalance(player.getName(), snap.getBalance());
         return true;
+    }
+    
+    public void setBalance(String name, double amount) {
+        if (!vault) {
+            return;
+        }
+        econ.withdrawPlayer(name, econ.getBalance(name));
+        econ.depositPlayer(name, amount);
     }
 
     /**
@@ -473,6 +538,7 @@ public class Admin extends JavaPlugin implements Listener {
                 p.setProperty(user.getName() + "/Exhaustion/" + snap.getName(), String.valueOf(snap.getExhaustion()));
                 p.setProperty(user.getName() + "/Food Level/" + snap.getName(), String.valueOf(snap.getFoodLevel()));
                 p.setProperty(user.getName() + "/Saturation/" + snap.getName(), String.valueOf(snap.getSaturation()));
+                p.setProperty(user.getName() + "/Balance/" + snap.getName(), String.valueOf(snap.getBalance()));
             }
         }
         try {
@@ -671,7 +737,8 @@ public class Admin extends JavaPlugin implements Listener {
                             Integer.parseInt(p.getProperty(user.getName() + "/Level/" + name)), gm,
                             Float.parseFloat(p.getProperty(user.getName() + "/Exhaustion/" + name)),
                             Integer.parseInt(p.getProperty(user.getName() + "/Food Level/" + name)),
-                            Float.parseFloat(p.getProperty(user.getName() + "/Saturation/" + name)));
+                            Float.parseFloat(p.getProperty(user.getName() + "/Saturation/" + name)),
+                            Double.parseDouble(p.getProperty(user.getName() + "/Balance/" + name)));
                     user.addSnapshot(snap);
                 } catch (NullPointerException | NumberFormatException e) {
                     getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: ELEFS",
@@ -694,7 +761,8 @@ public class Admin extends JavaPlugin implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent evt) {
-        if (!isUserRegistered(evt.getPlayer().getName()) && evt.getPlayer().hasPermission("admintoggle.*")) {
+        if (!isUserRegistered(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
+                || evt.getPlayer().hasPermission("admintoggle.basic"))) {
             users.add(new User(evt.getPlayer().getName()));
             evt.getPlayer().sendMessage("This is your first time using Admin Toggle. For instructions on"
                     + "using this plugin you can view the read me file here:"

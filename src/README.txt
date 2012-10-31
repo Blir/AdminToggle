@@ -1,6 +1,6 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version 1.2.3 10/25/2012
+Version 1.2.4 10/25/2012
 
 By Blir
 
@@ -10,105 +10,117 @@ players inventory, equipped items, health, hunger, game mode, and exp.
 
 The source code on GitHub: https://github.com/Blir/AdminToggle
 
-The project on Dev Bukkit: Not yet.
+The project on Dev Bukkit: TBA.
 
 Blir's Sponsored Minecraft Server: http://minepop.servegame.com
 
-Commands:
+==== Commands: ====
 
-    AdminSwitch:
+AdminSwitch:
 
-        The primary feature of the plugin, allows you to switch between whatever
-        snapshots are saved as "admin" and "legit." Admin mode is disabled by
-        default the first time you use the plugin. When you enable admin mode,
-        your current set-up is saved as "legit" and the plugin attempts to load
-        the Snapshot "admin." You can create an admin inventory simply by
-        entering "/snap admin". When you disable admin mode, the plugin
-        will save your current set-up as "temp" to help prevent accidental item 
-        loss, and then load the snapshot "legit."
+    This is the primary feature of the plugin. It allows the player to
+    switch between the "admin" and "legit" snapshots. The first time you
+    use the plugin, you are in "legit" mode. When you enable "admin" mode,
+    your current set-up is saved as "legit" and the plugin attempts to
+    load the "admin" snapshot. If the "admin" snapshot does not exist,
+    your inventory is not changed when switching to "admin" mode nor is 
+    the "admin" snapshot saved as "admin" upon switching back to "legit" 
+    mode. You can create an admin inventory simply by entering "/snap 
+    admin" (or "/osnap admin" to overwrite an existing snapshot). When you
+    disable admin mode, the plugin will save your current set-up as "temp"
+    to help prevent accidental item loss, and then load the "legit"
+    snapshot.
 
-        Usage: /AdminSwitch
-        Aliases: asdf, adswitch
+    Usage: /AdminSwitch
+    Aliases: asdf, adswitch
 
-    NewSnapshot:
+NewSnapshot:
 
-        Saves your current profile to RAM, with the name that you specify.
+    Saves your current profile to RAM, with the name that you specify.
+    All snapshots in RAM are automatically saved to a file.
+    See SaveSnapshots for more details on saving.
 
-        Usage: /NewSnapshot [Snapshot name]
-        Aliases: snap
+    Usage: /NewSnapshot [Snapshot name]
+    Aliases: newsnap
 
-    OverwriteSnapshot:
+OverwriteSnapshot:
 
-        Overwrites the snapshot you specify with your current profile.
+    Overwrites the snapshot you specify with your current profile.
 
-        Usage: /OverwriteSnapshot [Snapshot name]
-        Aliases: osnap
+    Usage: /OverwriteSnapshot [Snapshot name]
+    Aliases: osnap, overwritesnap
 
-    SaveSnapshots:
+SaveSnapshots:
 
-        Saves all snapshots currently in RAM to the snapshots.properties file,
-        the file that the plugin reads from upon being enabled to load snapshots
-        and users. Use of this command isn't normally necessary as the plugin
-        does this automatically every time the server is restarted or shut down,
-        unless there was a problem loading.
+    Saves all snapshots currently in RAM to the snapshots.properties file.
+    Snapshots are loaded from this file when the plugin is loaded. Use of
+    this command isn't normally necessary as the plugin does this
+    automatically every time the server is restarted or shut down, unless
+    there was a problem loading.
 
-        Usage: /SaveSnapshots
-        Aliases: savesnaps
+    Usage: /SaveSnapshots
+    Aliases: savesnap, savesnaps
 
-    LoadSnapshot:
+LoadSnapshot:
 
-        Loads the specified snapshot from RAM. If a snapshot doesn't exist with
-        the name you supply, no snapshot will be loaded.
+    Loads the specified snapshot from RAM. If a snapshot doesn't exist with
+    the name you supply, no snapshot will be loaded.
 
-        Usage: /LoadSnapshot [Snapshot name]
-        Aliases: loadsnap, lsnap
+    Usage: /LoadSnapshot [Snapshot name]
+    Aliases: loadsnap, lsnap
 
-    ListSnapshots:
+LoadOtherSnapshot:
 
-        Lists all current snapshots saved to your User.
+    Loads the specified snapshot from the specified user from RAM. If a user or
+    snapshot doesn't exist with the given names, no snapshot will be loaded.
 
-        Usage: /ListSnapshots
-        Aliases: list, listsnaps, lsnaps
+    Usage: /LoadOtherSnapshot [Player name] [Snapshot name]
+    Aliases: loadothersnap, losnap
 
-    ListAllSnapshots:
+MySnapshots:
 
-        Lists all current snapshots saved to all users.
+    Lists snapshots saved for your user.
 
-        Usage: /ListAllSnapshots
-        Aliases: listall, listallsnaps, lasnaps
+    Usage: /MySnapshots
+    Aliases: mysnaps, mysnap
 
-    DeleteSnapshot:
+AllSnapshots:
 
-        Deletes the snapshot with the specified name if it exists.
+    Lists snapshots saved for all users.
 
-        Usage: /DeleteSnapshot [Snapshot name]
-        Aliases: dsnap, delsnap
+    Usage: /AllSnapshots
+    Aliases: allsnaps, allsnap
 
-    DeleteAllSnapshots:
+DeleteSnapshot:
 
-        Deletes all snapshots for your User. Use caution, snapshots are
-        permanently lost. You must type confirm in all capital letters to
-        confirm this action. Likewise, there are no shorter aliases to prevent
-        accidental loss of snapshots.
+    Deletes the snapshot with the specified name if it exists.
 
-        Usage: /DeleteAllSnapshots CONFIRM
-        Aliases: None
+    Usage: /DeleteSnapshot [Snapshot name]
+    Aliases: dsnap, delsnap, deletesnap, removesnapshot, removesnap, rmsnap
 
-    UndoSnapshot:
+DeleteMySnapshots:
 
-        Reverses the last snapshot load. A convenience command, doesn't do
-        much that you can't do with /LoadSnapshot.
+    Deletes all snapshots for your user. Use carefully! Snapshots are
+    permanently lost. You must type "CONFIRM" in all capital letters to
+    confirm this action. Likewise, there are no shorter aliases to prevent
+    accidental loss of snapshots.
 
-        Usage: /UndoSnapshot
-        Aliases: usnap, undo
+    Usage: /DeleteMySnapshots CONFIRM
+    Aliases: None
 
-    AdminCheck:
+UndoSnapshot:
 
-        Returns your current admin mode setting. For the forgetful ones.
+    Reverses the last snapshot load. An intuitive way to undo snapshots
+    without having to use /LoadSnapshot.
 
-        Usage: /AdminCheck
-        Aliases: adcheck, ad
+    Usage: /UndoSnapshot
+    Aliases: undosnap, undosnaps, usnap, usnaps
+
+AdminCheck:
+
+    Returns your current admin mode setting. For the forgetful ones.
+
+    Usage: /AdminCheck
+    Aliases: adcheck, adc
 
 Notes: None of the commands are case-sensitive unless otherwise specified.
-
-Special thanks to LegendOfBrian for helping with the read me file. <3

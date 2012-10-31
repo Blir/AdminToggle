@@ -6,8 +6,8 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
- * @version 1.2.3
- * @since 10/25/12
+ * @version 1.2.5
+ * @since 10/30/12
  */
 public class Snapshot {
 
@@ -21,6 +21,7 @@ public class Snapshot {
     private float ex;
     private int food;
     private float sat;
+    private double balance = 0.0;
 
     /**
      * Creates a new Snapshot belonging to the given user and with the given
@@ -48,7 +49,7 @@ public class Snapshot {
      * @param food The food level of the Snapshot
      * @param sat The saturation of the Snapshot
      */
-    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat) {
+    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat, double balance) {
         this.user = user;
         this.name = name;
         this.inv = inv;
@@ -59,6 +60,7 @@ public class Snapshot {
         this.ex = ex;
         this.food = food;
         this.sat = sat;
+        this.balance = balance;
     }
 
     /**
@@ -150,6 +152,15 @@ public class Snapshot {
     public float getSaturation() {
         return sat;
     }
+    
+    /**
+     * Returns the balance of the Snapshot.
+     * 
+     * @return The balance of the Snapshot
+     */
+    public double getBalance() {
+        return balance;
+    }
 
     /**
      * Sets the inventory and armor of the Snapshot.
@@ -225,6 +236,15 @@ public class Snapshot {
     public void setSaturation(float sat) {
         this.sat = sat;
     }
+    
+    /**
+     * Sets the balance of the Snapshot.
+     * 
+     * @param balance The balance the Snapshot will be set to
+     */
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
 
     /**
      * Clones the Snapshot.
@@ -233,6 +253,6 @@ public class Snapshot {
      */
     @Override
     public Snapshot clone() {
-        return new Snapshot(user, name, inv, armor, exp, level, gm, ex, food, sat);
+        return new Snapshot(user, name, inv, armor, exp, level, gm, ex, food, sat, balance);
     }
 }
