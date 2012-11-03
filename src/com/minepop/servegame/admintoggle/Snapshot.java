@@ -6,8 +6,8 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
- * @version 1.2.5
- * @since 10/30/12
+ * @version 1.0.0
+ * @since 11/3/2012
  */
 public class Snapshot {
 
@@ -152,10 +152,10 @@ public class Snapshot {
     public float getSaturation() {
         return sat;
     }
-    
+
     /**
      * Returns the balance of the Snapshot.
-     * 
+     *
      * @return The balance of the Snapshot
      */
     public double getBalance() {
@@ -169,14 +169,14 @@ public class Snapshot {
      * @param armor The armor to be set to
      */
     public void setInv(ItemStack[] inv, ItemStack[] armor) {
-        this.inv = new ItemStack[inv.length];
-        for (int idx = 0; idx < inv.length; idx++) {
+        this.inv = new ItemStack[36];
+        for (int idx = 0; idx < 36; idx++) {
             if (inv[idx] != null) {
                 this.inv[idx] = inv[idx].clone();
             }
         }
-        this.armor = new ItemStack[armor.length];
-        for (int idx = 0; idx < armor.length; idx++) {
+        this.armor = new ItemStack[4];
+        for (int idx = 0; idx < 4; idx++) {
             if (armor[idx] != null) {
                 this.armor[idx] = armor[idx].clone();
             }
@@ -236,10 +236,10 @@ public class Snapshot {
     public void setSaturation(float sat) {
         this.sat = sat;
     }
-    
+
     /**
      * Sets the balance of the Snapshot.
-     * 
+     *
      * @param balance The balance the Snapshot will be set to
      */
     public void setBalance(double balance) {
@@ -247,12 +247,25 @@ public class Snapshot {
     }
 
     /**
-     * Clones the Snapshot.
+     * Returns a deep clone of the Snapshot.
      *
      * @return The clone of the Snapshot
      */
     @Override
     public Snapshot clone() {
-        return new Snapshot(user, name, inv, armor, exp, level, gm, ex, food, sat, balance);
+        ItemStack[][] inventories = new ItemStack[2][];
+        inventories[0] = new ItemStack[36];
+        inventories[1] = new ItemStack[4];
+        for (int idx = 0; idx < 36; idx++) {
+            if (inv[idx] != null) {
+                inventories[0][idx] = inv[idx].clone();
+            }
+        }
+        for (int idx = 0; idx < 4; idx++) {
+            if (inv[idx] != null) {
+                inventories[1][idx] = inv[idx].clone();
+            }
+        }
+        return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance);
     }
 }

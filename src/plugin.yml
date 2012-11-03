@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.5
+version: 1.0.0
 author: Blir
 softdepend: [Vault]
 commands:
@@ -12,19 +12,19 @@ commands:
     aliases: [asdf, adswitch]
   newsnapshot:
     description: Creates a new save.
-    usage: /<command> [save name]
+    usage: /<command> <snapshot name>
     permission: admintoggle.newsnapshot
     permission-message: You don't have permission to use that command.
     aliases: newsnap
   overwritesnapshot:
     description: Overwrites an existing save.
-    usage: /<command> [save name]
+    usage: /<command> <snapshot name>
     permission: amintoggle.overwritesnapshot
     permission-message: You don't have permissions to use that command.
     aliases: [osnap, overwritesnap]
   loadsnapshot:
     description: Loads the specified save.
-    usage: /<command> [save name]
+    usage: /<command> <snapshot name>
     permission: admintoggle.loadsnapshot
     permission-message: You don't have permission to use that command.
     aliases: [loadsnap, lsnap]
@@ -42,7 +42,7 @@ commands:
     aliases: [allsnaps, allsnap]
   deletesnapshot:
     description: Deletes the specified save.
-    usage: /<command> [save name]
+    usage: /<command> <snapshot name>
     permission: admintoggle.deletesnapshot
     permission-message: You don't have permission to use that command.
     aliases: [delsnap, dsnap, deletesnap, removesnapshot, removesnap, rmsnap]
@@ -71,7 +71,7 @@ commands:
     permission-message: You don't have permission to use that command.
   loadothersnapshot:
     description: Loads the specified snapshot from the specified user.
-    usage: /<command> [player name] [snapshot name]
+    usage: /<command> <player name> <snapshot name>
     permission: admintoggle.loadothersnapshot
     permission-message: You don't have permission to use that command.
     aliases: [loadothersnap, losnap]

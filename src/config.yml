@@ -1,2 +1,8 @@
 readme:
   version: 0
+snapshots:
+  savehunger: true
+  savegamemode: true
+  saveexp: true
+  savebalance: true
+  backup: true

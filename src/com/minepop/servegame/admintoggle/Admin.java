@@ -20,16 +20,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  *
  * @author Blir
- * @version 1.2.5
- * @since 10/30/12
+ * @version 1.0.0
+ * @since 11/3/2012
  */
 public class Admin extends JavaPlugin implements Listener {
 
-    private ArrayList<User> users = new ArrayList<>(1);
+    private final ArrayList<User> users = new ArrayList<>(1);
     private String folder;
     private boolean loadedProperly = true;
     private final int README_VERSION = 1;
     private boolean vault;
+    private boolean loadBalance;
+    private boolean loadHunger;
+    private boolean loadGameMode;
+    private boolean loadExp;
+    private boolean backup;
     private Economy econ = null;
 
     /**
@@ -48,12 +53,16 @@ public class Admin extends JavaPlugin implements Listener {
                 vault = false;
             }
         }
+        loadBalance = getConfig().getBoolean("snapshots.savebalance");
+        loadHunger = getConfig().getBoolean("snapshots.savehunger");
+        loadGameMode = getConfig().getBoolean("snapshots.savegamemode");
+        loadExp = getConfig().getBoolean("snapshots.saveexp");
+        backup = getConfig().getBoolean("snapshots.backup");
         getServer().getPluginManager().registerEvents(this, this);
-        File file = getDataFolder();
-        if (!file.isDirectory()) {
-            file.mkdir();
+        if (!getDataFolder().isDirectory()) {
+            getDataFolder().mkdir();
         }
-        folder = file.getPath();
+        folder = getDataFolder().getPath();
         loadSnapshots();
         if (!loadedProperly) {
             getLogger().warning("Since the plugin did not load properly, it will"
@@ -62,7 +71,7 @@ public class Admin extends JavaPlugin implements Listener {
                     + "             http://dev.bukkit.org/profiles/Bliry/");
             for (Player player : getServer().getOnlinePlayers()) {
                 if (player.hasPermission("admintoggle.*")) {
-                    player.sendMessage("Since AdminToggle did not load properly, it will not save upon "
+                    player.sendMessage("§4Since AdminToggle did not load properly, it will not save upon "
                             + "disabling. You will need to manually save or correct the error "
                             + "in the file, if there is one. If this issue persists, contact Blir at "
                             + "http://dev.bukkit.org/profiles/Bliry/");
@@ -102,9 +111,22 @@ public class Admin extends JavaPlugin implements Listener {
     public void onDisable() {
         if (loadedProperly) {
             saveSnapshots();
+            if (backup) {
+                backupSnapshots();
+            }
         } else {
             getLogger().warning("Not saving since the plugin didn't load properly.");
         }
+
+        loadBalance = getConfig().getBoolean("snapshots.savebalance");
+        loadHunger = getConfig().getBoolean("snapshots.savehunger");
+        loadGameMode = getConfig().getBoolean("snapshots.savegamemode");
+        loadExp = getConfig().getBoolean("snapshots.saveexp");
+        getConfig().set("snapshots.savebalance", loadBalance);
+        getConfig().set("snapshots.savehunger", loadHunger);
+        getConfig().set("snapshots.savegamemode", loadGameMode);
+        getConfig().set("snapshots.saveexp", loadExp);
+        getConfig().set("snapshots.backup", backup);
         saveConfig();
     }
 
@@ -139,19 +161,19 @@ public class Admin extends JavaPlugin implements Listener {
                 if (user.isAdminModeEnabled()) {
                     saveSnapshot(user, "temp", player, user.snapshotExists("temp"));
                     if (loadSnapshot(user, "legit", player, null)) {
-                        player.sendMessage("Snapshot \"legit\" loaded!");
+                        player.sendMessage("§aSnapshot \"legit\" loaded!");
                     } else {
-                        player.sendMessage("The snapshot \"legit\" doesn't exist!");
+                        player.sendMessage("§cThe snapshot \"legit\" doesn't exist!");
                     }
                 } else {
                     saveSnapshot(user, "legit", player, user.snapshotExists("legit"));
                     if (loadSnapshot(user, "admin", player, null)) {
-                        player.sendMessage("Snapshot \"admin\" loaded!");
+                        player.sendMessage("§aSnapshot \"admin\" loaded!");
                     } else {
-                        player.sendMessage("The snapshot \"admin\" doesn't exist!");
+                        player.sendMessage("§cThe snapshot \"admin\" doesn't exist!");
                     }
                 }
-                player.sendMessage("Admin mode " + (user.invertAdminMode() ? "enabled." : "disabled."));
+                player.sendMessage("§aAdmin mode " + (user.invertAdminMode() ? "enabled." : "disabled."));
                 return true;
             case "newsnapshot":
             case "newsnap":
@@ -161,9 +183,9 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (saveSnapshot(user, args[0], player, false)) {
-                    player.sendMessage("Snapshot \"" + args[0] + "\" saved!");
+                    player.sendMessage("§aSnapshot \"" + args[0] + "\" saved!");
                 } else {
-                    player.sendMessage("The snapshot \"" + args[0] + "\" already exists!");
+                    player.sendMessage("§cThe snapshot \"" + args[0] + "\" already exists!");
                 }
                 return true;
             case "overwritesnapshot":
@@ -176,9 +198,9 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (saveSnapshot(user, args[0], player, true)) {
-                    player.sendMessage("Snapshot \"" + args[0] + "\" overwritten!");
+                    player.sendMessage("§aSnapshot \"" + args[0] + "\" overwritten!");
                 } else {
-                    player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist to be overwritten! Snapshot created.");
+                    player.sendMessage("§cThe snapshot \"" + args[0] + "\" doesn't exist to be overwritten! Snapshot created.");
                     saveSnapshot(user, args[0], player, false);
                 }
                 return true;
@@ -192,9 +214,9 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (loadSnapshot(user, args[0], player, null)) {
-                    player.sendMessage("Snapshot \"" + args[0] + "\" loaded!");
+                    player.sendMessage("§aSnapshot \"" + args[0] + "\" loaded!");
                 } else {
-                    player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist!");
+                    player.sendMessage("§cThe snapshot \"" + args[0] + "\" doesn't exist!");
                 }
                 return true;
             case "loadothersnapshot":
@@ -209,12 +231,12 @@ public class Admin extends JavaPlugin implements Listener {
                 User target = getUser(args[0]);
                 if (target != null) {
                     if (loadSnapshot(user, args[1], player, target)) {
-                        player.sendMessage(args[0] + "'s snapshot \"" + args[1] + "\" loaded!");
+                        player.sendMessage("§a" + args[0] + "'s snapshot \"" + args[1] + "\" loaded!");
                     } else {
-                        player.sendMessage("The user \"" + args[0] + "\" does not have the snapshot \"" + args[1] + ".\"");
+                        player.sendMessage("§cThe user \"" + args[0] + "\" does not have the snapshot \"" + args[1] + ".\"");
                     }
                 } else {
-                    player.sendMessage("The user \"" + args[0] + "\" doesn't exist or isn't registered.");
+                    player.sendMessage("§cThe user \"" + args[0] + "\" doesn't exist or isn't registered.");
                 }
                 return true;
             case "mysnapshots":
@@ -227,12 +249,12 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (!user.getSnapshots().isEmpty()) {
-                    player.sendMessage("Current snapshots:");
+                    player.sendMessage("§aCurrent snapshots:");
                     for (Snapshot snap : user.getSnapshots()) {
-                        player.sendMessage(snap.getName());
+                        player.sendMessage("§a" + snap.getName());
                     }
                 } else {
-                    player.sendMessage("You have no snapshots.");
+                    player.sendMessage("§aYou have no snapshots.");
                 }
                 return true;
             case "deletesnapshot":
@@ -249,9 +271,9 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (user.removeSnapshot(args[0])) {
-                    player.sendMessage("Snapshot \"" + args[0] + "\" deleted!");
+                    player.sendMessage("§aSnapshot \"" + args[0] + "\" deleted!");
                 } else {
-                    player.sendMessage("The snapshot \"" + args[0] + "\" doesn't exist!");
+                    player.sendMessage("§cThe snapshot \"" + args[0] + "\" doesn't exist!");
                 }
                 return true;
             case "savesnapshots":
@@ -261,7 +283,7 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 saveSnapshots();
-                sender.sendMessage("Save complete.");
+                sender.sendMessage("§aSave complete.");
                 return true;
             case "admincheck":
             case "adcheck":
@@ -272,7 +294,7 @@ public class Admin extends JavaPlugin implements Listener {
                 } else if (args.length != 0) {
                     return false;
                 }
-                player.sendMessage("Admin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
+                player.sendMessage("§aAdmin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
                 return true;
             case "undosnapshot":
             case "undosnaps":
@@ -286,9 +308,9 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 if (revertSnapshot(user, player)) {
-                    player.sendMessage("Snapshot reverted.");
+                    player.sendMessage("§aSnapshot reverted.");
                 } else {
-                    player.sendMessage("Your last snapshot could not be retrieved.");
+                    player.sendMessage("§cYour last snapshot could not be retrieved.");
                 }
                 return true;
             case "deleteallsnapshots":
@@ -299,7 +321,7 @@ public class Admin extends JavaPlugin implements Listener {
                     return false;
                 }
                 user.clearSnapshots();
-                player.sendMessage("Snapshots deleted.");
+                player.sendMessage("§aSnapshots deleted.");
                 return true;
             case "listallsnapshots":
             case "listallsnaps":
@@ -308,14 +330,14 @@ public class Admin extends JavaPlugin implements Listener {
                 if (args.length != 0) {
                     return false;
                 }
-                sender.sendMessage("All snapshots: ");
+                sender.sendMessage("§aAll snapshots: ");
                 for (User regUser : users) {
                     if (regUser.getSnapshots().isEmpty()) {
-                        sender.sendMessage(regUser.getName() + " has no snapshots.");
+                        sender.sendMessage("§a" + regUser.getName() + " has no snapshots.");
                     } else {
-                        sender.sendMessage(regUser.getName() + "'s snapshots: ");
+                        sender.sendMessage("§a" + regUser.getName() + "'s snapshots: ");
                         for (Snapshot snap : regUser.getSnapshots()) {
-                            sender.sendMessage(snap.getName());
+                            sender.sendMessage("§a" + snap.getName());
                         }
                     }
                 }
@@ -415,41 +437,86 @@ public class Admin extends JavaPlugin implements Listener {
             return false;
         }
         user.logSnapshot(snap);
-        player.getInventory().setContents(snap.getInv());
-        player.getInventory().setArmorContents(snap.getArmor());
-        player.setGameMode(snap.getGameMode());
-        player.setExp(snap.getExp());
-        player.setLevel(snap.getLevel());
-        player.setExhaustion(snap.getExhaustion());
-        player.setFoodLevel(snap.getFoodLevel());
-        player.setSaturation(snap.getSaturation());
-        setBalance(player.getName(), snap.getBalance());
+        player.getInventory().setContents(cloneInventory(snap.getInv()));
+        player.getInventory().setArmorContents(cloneInventory(snap.getArmor()));
+        if (loadGameMode) {
+            player.setGameMode(snap.getGameMode());
+        }
+        if (loadExp) {
+            player.setExp(snap.getExp());
+            player.setLevel(snap.getLevel());
+        }
+        if (loadHunger) {
+            player.setExhaustion(snap.getExhaustion());
+            player.setFoodLevel(snap.getFoodLevel());
+            player.setSaturation(snap.getSaturation());
+        }
+        if (loadBalance) {
+            setBalance(player.getName(), snap.getBalance());
+        }
         return true;
     }
 
+    /**
+     * Reverts the Snapshot for the given User and Player.
+     *
+     * @param user The User associated with the Player
+     * @param player The Player to have their Snapshot reverted
+     * @return true if the Snapshot was reverted
+     */
     public boolean revertSnapshot(User user, Player player) {
         Snapshot snap = user.revertSnapshot();
         if (snap == null) {
             return false;
         }
-        player.getInventory().setContents(snap.getInv());
-        player.getInventory().setArmorContents(snap.getArmor());
-        player.setGameMode(snap.getGameMode());
-        player.setExp(snap.getExp());
-        player.setLevel(snap.getLevel());
-        player.setExhaustion(snap.getExhaustion());
-        player.setFoodLevel(snap.getFoodLevel());
-        player.setSaturation(snap.getSaturation());
-        setBalance(player.getName(), snap.getBalance());
+        player.getInventory().setContents(cloneInventory(snap.getInv()));
+        player.getInventory().setArmorContents(cloneInventory(snap.getArmor()));
+        if (loadGameMode) {
+            player.setGameMode(snap.getGameMode());
+        }
+        if (loadExp) {
+            player.setExp(snap.getExp());
+            player.setLevel(snap.getLevel());
+        }
+        if (loadHunger) {
+            player.setExhaustion(snap.getExhaustion());
+            player.setFoodLevel(snap.getFoodLevel());
+            player.setSaturation(snap.getSaturation());
+        }
+        if (loadBalance) {
+            setBalance(player.getName(), snap.getBalance());
+        }
         return true;
     }
-    
+
+    /**
+     * Sets the balance for the Player with the given name.
+     *
+     * @param name The name of the Player to have their balance set
+     * @param amount The amount the Player's balance will be set to
+     */
     public void setBalance(String name, double amount) {
         if (!vault) {
             return;
         }
         econ.withdrawPlayer(name, econ.getBalance(name));
         econ.depositPlayer(name, amount);
+    }
+
+    /**
+     * Clones the sent ItemStacks.
+     *
+     * @param inv The ItemStacks to be cloned
+     * @return The cloned ItemStacks
+     */
+    public ItemStack[] cloneInventory(ItemStack[] stack) {
+        ItemStack[] inventory = new ItemStack[stack.length];
+        for (int idx = 0; idx < stack.length; idx++) {
+            if (stack[idx] != null) {
+                inventory[idx] = stack[idx].clone();
+            }
+        }
+        return inventory;
     }
 
     /**
@@ -731,16 +798,59 @@ public class Admin extends JavaPlugin implements Listener {
                             new Object[]{user.getName(), name});
                     gm = GameMode.SURVIVAL;
                 }
+                double balance;
                 try {
-                    Snapshot snap = new Snapshot(user.getName(), name, inv, armor,
-                            Float.parseFloat(p.getProperty(user.getName() + "/Exp/" + name)),
-                            Integer.parseInt(p.getProperty(user.getName() + "/Level/" + name)), gm,
-                            Float.parseFloat(p.getProperty(user.getName() + "/Exhaustion/" + name)),
-                            Integer.parseInt(p.getProperty(user.getName() + "/Food Level/" + name)),
-                            Float.parseFloat(p.getProperty(user.getName() + "/Saturation/" + name)),
-                            Double.parseDouble(p.getProperty(user.getName() + "/Balance/" + name)));
-                    user.addSnapshot(snap);
+                    balance = Double.parseDouble(p.getProperty(user.getName() + "/Balance/" + name));
+                } catch (NumberFormatException | NullPointerException e) {
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Balance, set to 0.0",
+                            new Object[]{user.getName(), name});
+                    balance = 0.0;
+                }
+                float exp;
+                try {
+                    exp = Float.parseFloat(p.getProperty(user.getName() + "/Exp/" + name));
                 } catch (NullPointerException | NumberFormatException e) {
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Exp, set to 0",
+                            new Object[]{user.getName(), name});
+                    exp = 0;
+                }
+                int level;
+                try {
+                    level = Integer.parseInt(p.getProperty(user.getName() + "/Level/" + name));
+                } catch (NullPointerException | NumberFormatException e) {
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Level, set to 0",
+                            new Object[]{user.getName(), name});
+                    level = 0;
+                }
+                float ex;
+                try {
+                    ex = Float.parseFloat(p.getProperty(user.getName() + "/Exhaustion/" + name));
+                } catch (NullPointerException | NumberFormatException e) {
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Exhaustion, set to 2.5",
+                            new Object[]{user.getName(), name});
+                    ex = (float) 2.5;
+                }
+                int foodLevel;
+                try {
+                    foodLevel = Integer.parseInt(p.getProperty(user.getName() + "/Food Level/" + name));
+                } catch (NullPointerException | NumberFormatException e) {
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Food Level, set to 20",
+                            new Object[]{user.getName(), name});
+                    foodLevel = 20;
+                }
+                float sat;
+                try {
+                    sat = Float.parseFloat(p.getProperty(user.getName() + "/Saturation/" + name));
+                } catch (NullPointerException | NumberFormatException e) {
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Saturation, set to 0",
+                            new Object[]{user.getName(), name});
+                    sat = 0;
+                }
+                try {
+                    Snapshot snap = new Snapshot(
+                            user.getName(), name, inv, armor, exp, level, gm, ex, foodLevel, sat, balance);
+                    user.addSnapshot(snap);
+                } catch (NullPointerException e) {
                     getLogger().log(Level.SEVERE, "Error loading {0}''s Snapshot {1}: ELEFS",
                             new Object[]{user.getName(), name});
                     loadedProperly = false;
@@ -750,7 +860,7 @@ public class Admin extends JavaPlugin implements Listener {
         try {
             fis.close();
         } catch (IOException e) {
-            getLogger().severe("Error closing input stream!");
+            getLogger().warning("Error closing input stream.");
         }
     }
 
@@ -764,10 +874,111 @@ public class Admin extends JavaPlugin implements Listener {
         if (!isUserRegistered(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
                 || evt.getPlayer().hasPermission("admintoggle.basic"))) {
             users.add(new User(evt.getPlayer().getName()));
-            evt.getPlayer().sendMessage("This is your first time using Admin Toggle. For instructions on"
+            evt.getPlayer().sendMessage("§aThis is your first time using Admin Toggle. For instructions on"
                     + "using this plugin you can view the read me file here:"
                     + "https://github.com/Blir/AdminToggle - I hope you find this"
                     + "plugin useful! :)");
+        }
+    }
+
+    /**
+     * Saves all Snapshots to file.
+     */
+    public void backupSnapshots() {
+        File file = new File(folder + "/snapshots_backup.properties");
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(file);
+        } catch (IOException e) {
+            getLogger().severe("Failed to open output stream!");
+            return;
+        }
+        Properties p = new Properties();
+        p.setProperty("User Count", String.valueOf(users.size()));
+        for (int idx = 0; idx < users.size(); idx++) {
+            User user = users.get(idx);
+            p.setProperty("User/" + idx, user.getName());
+            p.setProperty("Admin/" + idx, String.valueOf(user.isAdminModeEnabled()));
+            p.setProperty(user.getName() + "/Snapshot Count", String.valueOf(user.getSnapshots().size()));
+            for (int idx2 = 0; idx2 < user.getSnapshots().size(); idx2++) {
+                Snapshot snap = user.getSnapshots().get(idx2);
+                p.setProperty(user.getName() + "/Snapshot/" + idx2, snap.getName());
+                for (int idx3 = 0; idx3 < 36; idx3++) {
+                    ItemStack inv = snap.getInv()[idx3];
+                    if (inv != null) {
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/IType/"
+                                + idx3, String.valueOf(inv.getTypeId()));
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/IAmount/"
+                                + idx3, String.valueOf(inv.getAmount()));
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/IDamage/"
+                                + idx3, String.valueOf(inv.getDurability()));
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/IEnchant/"
+                                + idx3, String.valueOf(inv.getEnchantments().size()));
+                        int idx4 = 0;
+                        for (Iterator<Enchantment> it = inv.getEnchantments().keySet().iterator(); it.hasNext();) {
+                            Enchantment ench = it.next();
+                            p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
+                                    + "/IEnchantment/" + idx4, String.valueOf(ench.getName()));
+                            p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
+                                    + "/IEnchantLevel/" + idx4, String.valueOf(inv.getEnchantmentLevel(ench)));
+                            idx4++;
+                        }
+                    } else {
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/IType/" + idx3, "null");
+                    }
+                }
+                for (int idx3 = 0; idx3 < 4; idx3++) {
+                    ItemStack armor = snap.getArmor()[idx3];
+                    if (armor != null) {
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/AType/" + idx3,
+                                String.valueOf(armor.getTypeId()));
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/AAmount/" + idx3,
+                                String.valueOf(armor.getAmount()));
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/ADamage/" + idx3,
+                                String.valueOf(armor.getDurability()));
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/AEnchant/" + idx3,
+                                String.valueOf(armor.getEnchantments().size()));
+                        int idx4 = 0;
+                        for (Iterator<Enchantment> it = armor.getEnchantments().keySet().iterator(); it.hasNext();) {
+                            Enchantment ench = it.next();
+                            p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
+                                    + "/AEnchantment/" + idx4, String.valueOf(ench.getName()));
+                            p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
+                                    + "/AEnchantLevel/" + idx4, String.valueOf(armor.getEnchantmentLevel(ench)));
+                            idx4++;
+                        }
+                    } else {
+                        p.setProperty(user.getName() + "/" + snap.getName() + "/AType/" + idx3, "null");
+                    }
+                }
+                switch (snap.getGameMode()) {
+                    case CREATIVE:
+                        p.setProperty(user.getName() + "/GameMode/" + snap.getName(), "creative");
+                        break;
+                    case SURVIVAL:
+                        p.setProperty(user.getName() + "/GameMode/" + snap.getName(), "survival");
+                        break;
+                    case ADVENTURE:
+                        p.setProperty(user.getName() + "/GameMode/" + snap.getName(), "adventure");
+                        break;
+                }
+                p.setProperty(user.getName() + "/Exp/" + snap.getName(), String.valueOf(snap.getExp()));
+                p.setProperty(user.getName() + "/Level/" + snap.getName(), String.valueOf(snap.getLevel()));
+                p.setProperty(user.getName() + "/Exhaustion/" + snap.getName(), String.valueOf(snap.getExhaustion()));
+                p.setProperty(user.getName() + "/Food Level/" + snap.getName(), String.valueOf(snap.getFoodLevel()));
+                p.setProperty(user.getName() + "/Saturation/" + snap.getName(), String.valueOf(snap.getSaturation()));
+                p.setProperty(user.getName() + "/Balance/" + snap.getName(), String.valueOf(snap.getBalance()));
+            }
+        }
+        try {
+            p.store(fos, null);
+        } catch (IOException e) {
+            getLogger().severe("Failed to save snapshots.properties!");
+        }
+        try {
+            fos.close();
+        } catch (IOException e) {
+            getLogger().severe("Error closing the output stream! Data might not be saved.");
         }
     }
 }

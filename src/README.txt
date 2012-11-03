@@ -1,12 +1,12 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version 1.2.4 10/25/2012
+Version 1.0.0 11/3/2012
 
 By Blir
 
 AdminToggle is a Minecraft plugin intended for server admins to quickly toggle
 between two or more player profiles. These profiles (or "snapshots") contain the
-players inventory, equipped items, health, hunger, game mode, and exp.
+players inventory, equipped items, hunger, game mode, and exp.
 
 The source code on GitHub: https://github.com/Blir/AdminToggle
 
