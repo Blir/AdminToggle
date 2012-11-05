@@ -10,7 +10,7 @@ players inventory, equipped items, health, hunger, game mode, and exp.
 
 ==== Downloads: ====
 
-v1.0.0: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/Release/1.0.0/AdminToggle.jar
+v1.0.1: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/Release/1.0.1/AdminToggle.jar
 
 The project on Dev Bukkit: http://dev.bukkit.org/server-mods/admintoggle/
 
