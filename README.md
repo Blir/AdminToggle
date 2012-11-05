@@ -12,7 +12,7 @@ players inventory, equipped items, health, hunger, game mode, and exp.
 
 v1.0.0: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/Release/1.0.0/AdminToggle.jar
 
-The project on Dev Bukkit: TBA.
+The project on Dev Bukkit: http://dev.bukkit.org/server-mods/admintoggle/
 
 Blir's Sponsored Minecraft Server: http://minepop.servegame.com
 
