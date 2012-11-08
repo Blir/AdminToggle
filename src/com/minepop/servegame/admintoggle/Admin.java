@@ -20,8 +20,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  *
  * @author Blir
- * @version 1.0.0
- * @since 11/3/2012
+ * @version 1.0.1
+ * @since 11/6/2012
  */
 public class Admin extends JavaPlugin implements Listener {
 
@@ -117,11 +117,6 @@ public class Admin extends JavaPlugin implements Listener {
         } else {
             getLogger().warning("Not saving since the plugin didn't load properly.");
         }
-
-        loadBalance = getConfig().getBoolean("snapshots.savebalance");
-        loadHunger = getConfig().getBoolean("snapshots.savehunger");
-        loadGameMode = getConfig().getBoolean("snapshots.savegamemode");
-        loadExp = getConfig().getBoolean("snapshots.saveexp");
         getConfig().set("snapshots.savebalance", loadBalance);
         getConfig().set("snapshots.savehunger", loadHunger);
         getConfig().set("snapshots.savegamemode", loadGameMode);
@@ -179,6 +174,7 @@ public class Admin extends JavaPlugin implements Listener {
             case "newsnap":
                 if (!(sender instanceof Player)) {
                     sender.sendMessage("You must be a player to use this command!");
+                    return true;
                 } else if (args.length != 1) {
                     return false;
                 }
@@ -323,10 +319,9 @@ public class Admin extends JavaPlugin implements Listener {
                 user.clearSnapshots();
                 player.sendMessage("§aSnapshots deleted.");
                 return true;
-            case "listallsnapshots":
-            case "listallsnaps":
-            case "listall":
-            case "lasnaps":
+            case "allsnapshots":
+            case "allsnaps":
+            case "allsnap":
                 if (args.length != 0) {
                     return false;
                 }
@@ -874,9 +869,9 @@ public class Admin extends JavaPlugin implements Listener {
         if (!isUserRegistered(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
                 || evt.getPlayer().hasPermission("admintoggle.basic"))) {
             users.add(new User(evt.getPlayer().getName()));
-            evt.getPlayer().sendMessage("§aThis is your first time using Admin Toggle. For instructions on"
-                    + "using this plugin you can view the read me file here:"
-                    + "https://github.com/Blir/AdminToggle - I hope you find this"
+            evt.getPlayer().sendMessage("§aThis is your first time using Admin Toggle. For instructions on "
+                    + "using this plugin you can view the read me file here: "
+                    + "https://github.com/Blir/AdminToggle - I hope you find this "
                     + "plugin useful! :)");
         }
     }

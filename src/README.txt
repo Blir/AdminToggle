@@ -1,6 +1,6 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version 1.0.0 11/3/2012
+Version 1.0.1 11/6/2012
 
 By Blir
 
@@ -40,14 +40,14 @@ NewSnapshot:
     All snapshots in RAM are automatically saved to a file.
     See SaveSnapshots for more details on saving.
 
-    Usage: /NewSnapshot [Snapshot name]
+    Usage: /NewSnapshot <Snapshot name>
     Aliases: newsnap
 
 OverwriteSnapshot:
 
     Overwrites the snapshot you specify with your current profile.
 
-    Usage: /OverwriteSnapshot [Snapshot name]
+    Usage: /OverwriteSnapshot <Snapshot name>
     Aliases: osnap, overwritesnap
 
 SaveSnapshots:
@@ -66,7 +66,7 @@ LoadSnapshot:
     Loads the specified snapshot from RAM. If a snapshot doesn't exist with
     the name you supply, no snapshot will be loaded.
 
-    Usage: /LoadSnapshot [Snapshot name]
+    Usage: /LoadSnapshot <Snapshot name>
     Aliases: loadsnap, lsnap
 
 LoadOtherSnapshot:
@@ -74,7 +74,7 @@ LoadOtherSnapshot:
     Loads the specified snapshot from the specified user from RAM. If a user or
     snapshot doesn't exist with the given names, no snapshot will be loaded.
 
-    Usage: /LoadOtherSnapshot [Player name] [Snapshot name]
+    Usage: /LoadOtherSnapshot <Player name> <Snapshot name>
     Aliases: loadothersnap, losnap
 
 MySnapshots:
@@ -95,7 +95,7 @@ DeleteSnapshot:
 
     Deletes the snapshot with the specified name if it exists.
 
-    Usage: /DeleteSnapshot [Snapshot name]
+    Usage: /DeleteSnapshot <Snapshot name>
     Aliases: dsnap, delsnap, deletesnap, removesnapshot, removesnap, rmsnap
 
 DeleteMySnapshots:

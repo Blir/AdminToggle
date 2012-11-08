@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.0.0
+version: 1.0.1
 author: Blir
 softdepend: [Vault]
 commands:

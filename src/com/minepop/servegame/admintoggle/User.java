@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  *
  * @author Blir
- * @version 1.0.0
+ * @version 1.0.1
  * @since 11/3/2012
  */
 public class User {

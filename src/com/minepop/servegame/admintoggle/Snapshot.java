@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
- * @version 1.0.0
+ * @version 1.0.1
  * @since 11/3/2012
  */
 public class Snapshot {
@@ -262,8 +262,8 @@ public class Snapshot {
             }
         }
         for (int idx = 0; idx < 4; idx++) {
-            if (inv[idx] != null) {
-                inventories[1][idx] = inv[idx].clone();
+            if (armor[idx] != null) {
+                inventories[1][idx] = armor[idx].clone();
             }
         }
         return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance);
