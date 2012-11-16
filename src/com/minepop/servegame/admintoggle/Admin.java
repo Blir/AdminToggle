@@ -20,21 +20,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  *
  * @author Blir
- * @version 1.0.1
+ * @version 1.0.2
  * @since 11/6/2012
  */
 public class Admin extends JavaPlugin implements Listener {
 
     private final ArrayList<User> users = new ArrayList<>(1);
-    private String folder;
-    private boolean loadedProperly = true;
     private final int README_VERSION = 1;
-    private boolean vault;
-    private boolean loadBalance;
-    private boolean loadHunger;
-    private boolean loadGameMode;
-    private boolean loadExp;
-    private boolean backup;
+    private final String folder = getDataFolder().getPath();
+    private boolean loadedProperly = true;
+    private boolean vault, loadBalance, loadHunger, loadGameMode, loadExp, backup;
     private Economy econ = null;
 
     /**
@@ -62,7 +57,6 @@ public class Admin extends JavaPlugin implements Listener {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
-        folder = getDataFolder().getPath();
         loadSnapshots();
         if (!loadedProperly) {
             getLogger().warning("Since the plugin did not load properly, it will"

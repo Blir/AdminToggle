@@ -6,21 +6,16 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
- * @version 1.0.1
+ * @version 1.0.2
  * @since 11/3/2012
  */
 public class Snapshot {
 
-    private String user;
-    private String name;
-    private ItemStack[] inv;
-    private ItemStack[] armor;
-    private float exp;
-    private int level;
+    private String user, name;
+    private ItemStack[] inv, armor;
+    private float exp, ex, sat;
+    private int level, food;
     private GameMode gm;
-    private float ex;
-    private int food;
-    private float sat;
     private double balance = 0.0;
 
     /**
