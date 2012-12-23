@@ -5,15 +5,14 @@ import java.util.ArrayList;
 /**
  *
  * @author Blir
- * @version 1.0.2
- * @since 11/3/2012
+ * @version 1.1.0 Beta
+ * @since 22 Dec. 2012
  */
 public class User {
 
     private String name;
-    private ArrayList<Snapshot> snaps = new ArrayList<>(0);
+    private ArrayList<Snapshot> snaps = new ArrayList<>(0), snapLog = new ArrayList<>(0);
     private Snapshot currentSnap = null;
-    private ArrayList<Snapshot> snapLog = new ArrayList<>(0);
     private int snapLogIdx = 0;
     private boolean adminMode = false;
 
@@ -71,13 +70,29 @@ public class User {
      * @param name The name of the Snapshot to be returned
      * @return The Snapshot
      */
-    public Snapshot getSnapshot(String name) {
+    public Snapshot getSnapshot(String name, WorldGroup world) {
         for (Snapshot snap : snaps) {
-            if (snap.getName().equals(name)) {
+            if (snap.getName().equals(name) && world.isMember(snap.getWorld())) {
                 return snap;
             }
         }
         return null;
+    }
+    
+    /**
+     * Returns all Snapshots with the given name.
+     * 
+     * @param name The name of the Snapshot to search for
+     * @return The Snapshots with matching names
+     */
+    public ArrayList<Snapshot> getSnapshots(String name) {
+        ArrayList<Snapshot> matches = new ArrayList<>(0);
+        for (Snapshot snap: snaps) {
+            if (snap.getName().equals(name)) {
+                matches.add(snap);
+            }
+        }
+        return matches;
     }
 
     /**
@@ -86,9 +101,9 @@ public class User {
      * @param name The name of the Snapshot to be removed
      * @return true if a Snapshot was removed
      */
-    public boolean removeSnapshot(String name) {
+    public boolean removeSnapshot(String name, WorldGroup world) {
         for (Snapshot snap : snaps) {
-            if (snap.getName().equals(name)) {
+            if (snap.getName().equals(name) && world.isMember(snap.getWorld())) {
                 snaps.remove(snap);
                 return true;
             }
@@ -100,11 +115,12 @@ public class User {
      * Returns whether or not the Snapshot with the given name exists.
      *
      * @param name The name of the Snapshot
+     * @param world The WorldGroup to be associated with the Snapshot
      * @return true if it exists
      */
-    public boolean snapshotExists(String name) {
+    public boolean hasSnapshot(String name, WorldGroup world) {
         for (Snapshot snap : snaps) {
-            if (snap.getName().equals(name)) {
+            if (snap.getName().equals(name) && world.isMember(snap.getWorld())) {
                 return true;
             }
         }
@@ -173,5 +189,14 @@ public class User {
     public boolean setAdminMode(boolean adminMode) {
         this.adminMode = adminMode;
         return this.adminMode;
+    }
+    
+    /**
+     * Returns the current Snapshot the User is set to.
+     * 
+     * @return The current Snapshot
+     */
+    public Snapshot getCurrentSnapshot() {
+        return currentSnap;
     }
 }

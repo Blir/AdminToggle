@@ -6,3 +6,5 @@ snapshots:
   saveexp: true
   savebalance: true
   backup: true
+worldgroups:
+  makedefault: true

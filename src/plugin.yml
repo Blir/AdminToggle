@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.0.2
+version: 1.1.0 Beta
 author: Blir
 softdepend: [Vault]
 commands:
@@ -75,6 +75,42 @@ commands:
     permission: admintoggle.loadothersnapshot
     permission-message: You don't have permission to use that command.
     aliases: [loadothersnap, losnap]
+  createworldgroup:
+    description: Creates a new world group with the given name.
+    usage: /<command> <name> [first world] [second world] [and so on...]
+    permission: admintoggle.createworldgroup
+    permission-message: You don't have permission to use that command.
+    aliases: []
+  addtoworldgroup:
+    description: Adds the given worlds to this world group.
+    usage: /<command> <first world> [second world] [and so on...]
+    permission: admintoggle.addtoworldgroup
+    permission-message: You don't have permission to use that command.
+    aliases: []
+  removefromworldgroup:
+    description: Removes the given worlds from this world group.
+    usage: /<command> <first world> [second world] [and so on...]
+    permission: admintoggle.removefromworldgroup
+    permission-message: You don't have permission to use that command.
+    aliases: [deletefromworldgroup]
+  deleteworldgroup:
+    description: Deletes the specified world group.
+    usage: /<command> <world group name>
+    permission: admintoggle.deleteworldgroup
+    permission-message: You don't have permission to use that command.
+    aliases: []
+  listworldgroups:
+    description: Lists all world groups and the worlds belonging to them.
+    usage: /<command>
+    permission: admintoggle.listworldgroups
+    permission-message: You don't have permission to use that command.
+    aliases: []
+  movesnapshot:
+    description: Moves the specified snapshot to the given world.
+    usage: /<command> <snapshot name> <world name> <user of the snapshot if from console> <world group of the snapshot if from console>
+    permission: admintoggle.movesnapshot
+    permission-message: You don't have permission to use that command.
+    aliases: movesnap
 permissions:
   admintoggle.*:
     children:
@@ -90,6 +126,13 @@ permissions:
       admintoggle.overwritesnapshot: true
       admintoggle.allsnapshots: true
       admintoggle.loadothersnapshot: true
+      admintoggle.createworldgroup: true
+      admintoggle.addtoworldgroup: true
+      admintoggle.removefromworldgroup: true
+      admintoggle.deleteworldgroup: true
+      admintoggle.listworldgroups: true
+      admintoggle.deletesnapshot: true
+      admintoggle.movesnapshot: true
   admintoggle.basic:
     children:
       admintoggle.adminswitch: true
@@ -125,3 +168,15 @@ permissions:
     description: Allows use of the /listallsnapshots command.
   admintoggle.loadothersnapshot:
     description: Allows use of the /loadothersnapshot command.
+  admintoggle.createworldgroup:
+    description: Allows use of the /createworldgroup command.
+  admintoggle.addtoworldgroup:
+    description: Allows use of the /addtoworldgroup command.
+  admintoggle.removefromworldgroup:
+    description: Allows use of the /removefromworldgroup command.
+  admintoggle.listworldgroups:
+    description: Allows use of the /listworldgroups command.
+  admintoggle.deleteworldgroup:
+    description: Allows use of the /deleteworldgroup command.
+  admintoggle.movesnapshot:
+    description: Allows use of the /movesnapshot command.

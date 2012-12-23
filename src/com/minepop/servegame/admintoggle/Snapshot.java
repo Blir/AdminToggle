@@ -5,13 +5,13 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  *
- * @author Blir
- * @version 1.0.2
- * @since 11/3/2012
+ * @author Blir 
+ * @version 1.1.0 Beta
+ * @since 22 Dec. 2012
  */
 public class Snapshot {
 
-    private String user, name;
+    private String user, name, world;
     private ItemStack[] inv, armor;
     private float exp, ex, sat;
     private int level, food;
@@ -44,7 +44,7 @@ public class Snapshot {
      * @param food The food level of the Snapshot
      * @param sat The saturation of the Snapshot
      */
-    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat, double balance) {
+    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat, double balance, String world) {
         this.user = user;
         this.name = name;
         this.inv = inv;
@@ -56,6 +56,7 @@ public class Snapshot {
         this.food = food;
         this.sat = sat;
         this.balance = balance;
+        this.world = world;
     }
 
     /**
@@ -156,6 +157,15 @@ public class Snapshot {
     public double getBalance() {
         return balance;
     }
+    
+    /**
+     * Returns the name of the world the Snapshot belongs to.
+     * 
+     * @return The name of the world
+     */
+    public String getWorld() {
+        return world;
+    }
 
     /**
      * Sets the inventory and armor of the Snapshot.
@@ -240,6 +250,15 @@ public class Snapshot {
     public void setBalance(double balance) {
         this.balance = balance;
     }
+    
+    /**
+     * Sets the name of the world the Snapshot belongs to.
+     * 
+     * @param name The name of the world the Snapshot will be set to
+     */
+    public void setWorld(String name) {
+        world = name;
+    }
 
     /**
      * Returns a deep clone of the Snapshot.
@@ -261,6 +280,6 @@ public class Snapshot {
                 inventories[1][idx] = armor[idx].clone();
             }
         }
-        return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance);
+        return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance, world);
     }
 }

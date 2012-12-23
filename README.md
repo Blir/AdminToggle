@@ -1,6 +1,7 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version 1.0.1 11/6/2012
+Version: 1.1.0 Beta
+Date: 22 Dec. 2012
 
 By Blir
 
@@ -10,7 +11,9 @@ players inventory, equipped items, health, hunger, game mode, and exp.
 
 ==== Downloads: ====
 
-v1.0.2: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/Release/1.0.2/AdminToggle.jar
+v1.0.3: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/Release/1.0.3/AdminToggle.jar
+
+v1.1.0 Beta: https://dl.dropbox.com/u/103112496/plugins/AdminToggle/Release/1.1.0%20Beta/AdminToggle.jar
 
 The project on Dev Bukkit: http://dev.bukkit.org/server-mods/admintoggle/
 
@@ -110,6 +113,14 @@ DeleteMySnapshots:
     Usage: /DeleteMySnapshots CONFIRM
     Aliases: None
 
+MoveSnapshot:
+
+    Moves the specified snapshot to the specified world.
+
+    Usage: /MoveSnapshot <snapshot name> <target world> <user of the snapshot if
+    from the console> <world group of the snapshot if from the console>
+
+
 UndoSnapshot:
 
     Reverses the last snapshot load. An intuitive way to undo snapshots
@@ -124,5 +135,36 @@ AdminCheck:
 
     Usage: /AdminCheck
     Aliases: adcheck, adc
+
+CreateWorldGroup:
+
+    Creates a new world group with the given name and initializes it with the
+    specified worlds, if any.
+
+    Usage: /CreateWorldGroup <name> [first world] [second world] [and so on...]
+    Aliases: None for now.
+
+AddToWorldGroup:
+
+    Adds the specified worlds to the specified world group.
+
+    Usage: /AddToWorldGroup <world group name> <first world> [second world, etc]
+    Aliases: None for now.
+
+RemoveFromWorldGroup:
+
+    Removes the specified worlds from the specified world group.
+
+    Usage: /RemoveFromWorldGroup <name> <first world> [second world, etc]
+    Aliases: None for now.
+
+DeleteWorldGroup:
+
+    Deletes the specified world group. The worlds previously in the world groups
+    will behave normally. The snapshots previously shared between these worlds
+    will return to their original world.
+
+    Usage: /DeleteWorldGroup <world group name>
+    Aliases: None for now.
 
 Notes: None of the commands are case-sensitive unless otherwise specified.
