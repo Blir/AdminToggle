@@ -5,13 +5,13 @@ import java.util.ArrayList;
 /**
  *
  * @author Blir
- * @version 1.1.0 Beta
+ * @version 1.1.22
  * @since 22 Dec. 2012
  */
 public class User {
 
     private String name;
-    private ArrayList<Snapshot> snaps = new ArrayList<>(0), snapLog = new ArrayList<>(0);
+    private final ArrayList<Snapshot> snaps = new ArrayList<>(0), snapLog = new ArrayList<>(0);
     private Snapshot currentSnap = null;
     private int snapLogIdx = 0;
     private boolean adminMode = false;

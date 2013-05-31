@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.1.0 Beta
+version: 1.1.22
 author: Blir
 softdepend: [Vault]
 commands:
@@ -8,116 +8,121 @@ commands:
     description: Toggles admin mode.
     usage: /<command>
     permission: admintoggle.adminswitch
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [asdf, adswitch]
   newsnapshot:
     description: Creates a new save.
     usage: /<command> <snapshot name>
     permission: admintoggle.newsnapshot
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: newsnap
   overwritesnapshot:
     description: Overwrites an existing save.
     usage: /<command> <snapshot name>
     permission: admintoggle.overwritesnapshot
-    permission-message: You don't have permissions to use that command.
+    permission-message: §cYou don't have permissions to use that command.
     aliases: [osnap, overwritesnap]
   loadsnapshot:
     description: Loads the specified save.
     usage: /<command> <snapshot name>
     permission: admintoggle.loadsnapshot
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [loadsnap, lsnap]
-  mysnapshots:
+  listsnapshots:
     description: Lists your current snapshots.
     usage: /<command>
-    permission: admintoggle.mysnapshots
-    permission-message: You don't have permission to use that command.
-    aliases: [mysnaps, mysnap]
+    permission: admintoggle.listsnapshots
+    permission-message: §cYou don't have permission to use that command.
+    aliases: [listsnaps, listsnap]
   allsnapshots:
     description: Lists all snapshots.
     usage: /<command>
     permission: admintoggle.allsnapshots
-    permission-message: You don't have permission to use that command
+    permission-message: §cYou don't have permission to use that command
     aliases: [allsnaps, allsnap]
   deletesnapshot:
-    description: Deletes the specified save.
+    description: Deletes the specified snapshot.
     usage: /<command> <snapshot name>
     permission: admintoggle.deletesnapshot
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [delsnap, dsnap, deletesnap, removesnapshot, removesnap, rmsnap]
   savesnapshots:
-    description: Saves the snapshots.
+    description: Saves your snapshots.
     usage: /<command>
     permission: admintoggle.savesnapshots
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [savesnaps, savesnap]
   admincheck:
-    description: Returns if admin mode is currently enabled.
+    description: Returns whether admin mode is currently enabled.
     usage: /<command>
     permission: admintoggle.admincheck
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [adcheck, adc]
   undosnapshot:
     description: Reverts back to your previous snapshot.
     usage: /<command>
     permission: admintoggle.undosnapshot
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [undosnap, undosnaps, usnaps, usnap]
   deletemysnapshots:
-    description: Deletes all snapshots.
+    description: Deletes all of your snapshots.
     usage: /<command> CONFIRM
     permission: admintoggle.deletemysnapshots
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
   loadothersnapshot:
     description: Loads the specified snapshot from the specified user.
     usage: /<command> <player name> <snapshot name>
     permission: admintoggle.loadothersnapshot
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [loadothersnap, losnap]
   createworldgroup:
     description: Creates a new world group with the given name.
     usage: /<command> <name> [first world] [second world] [and so on...]
     permission: admintoggle.createworldgroup
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: []
   addtoworldgroup:
-    description: Adds the given worlds to this world group.
+    description: Adds the specified world(s) to this world group.
     usage: /<command> <first world> [second world] [and so on...]
     permission: admintoggle.addtoworldgroup
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: []
   removefromworldgroup:
-    description: Removes the given worlds from this world group.
+    description: Removes the specified world(s) from this world group.
     usage: /<command> <first world> [second world] [and so on...]
     permission: admintoggle.removefromworldgroup
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [deletefromworldgroup]
   deleteworldgroup:
     description: Deletes the specified world group.
     usage: /<command> <world group name>
     permission: admintoggle.deleteworldgroup
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: []
   listworldgroups:
     description: Lists all world groups and the worlds belonging to them.
     usage: /<command>
     permission: admintoggle.listworldgroups
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: []
   movesnapshot:
-    description: Moves the specified snapshot to the given world.
+    description: Moves the specified snapshot to the specified world.
     usage: /<command> <snapshot name> <world name> <user of the snapshot if from console> <world group of the snapshot if from console>
     permission: admintoggle.movesnapshot
-    permission-message: You don't have permission to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: movesnap
+  admintoggle:
+    description: Used for miscellaneous commands.
+    usage: /<command> <action>
+    permission: admintoggle.admintoggle
+    permission-message: §cYou don't have permission to use that command.
 permissions:
   admintoggle.*:
     children:
       admintoggle.adminswitch: true
       admintoggle.newsnapshot: true
       admintoggle.loadsnapshot: true
-      admintoggle.mysnapshots: true
+      admintoggle.listsnapshots: true
       admintoggle.deletesnapshot: true
       admintoggle.savesnapshots: true
       admintoggle.admincheck: true
@@ -133,12 +138,13 @@ permissions:
       admintoggle.listworldgroups: true
       admintoggle.deletesnapshot: true
       admintoggle.movesnapshot: true
+      admintoggle.admintoggle: true
   admintoggle.basic:
     children:
       admintoggle.adminswitch: true
       admintoggle.newsnapshot: true
       admintoggle.loadsnapshot: true
-      admintoggle.mysnapshots: true
+      admintoggle.listsnapshots: true
       admintoggle.deletesnapshot: true
       admintoggle.admincheck: true
       admintoggle.undosnapshot: true
@@ -150,7 +156,7 @@ permissions:
     description: Allows use of the /newsnapshot command.
   admintoggle.loadsnapshot:
     description: Allows use of the /loadsnapshot command.
-  admintoggle.mysnapshots:
+  admintoggle.listsnapshots:
     description: Allows use of the /listsnapshots command.
   admintoggle.deletesnapshot:
     description: Allows use of the /deletesnapshot command.
@@ -180,3 +186,5 @@ permissions:
     description: Allows use of the /deleteworldgroup command.
   admintoggle.movesnapshot:
     description: Allows use of the /movesnapshot command.
+  admintoggle.admintoggle:
+    description: Allows use of the /admintoggle command.

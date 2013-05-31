@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  *
  * @author Blir
- * @version v1.1.0 Beta
+ * @version 1.1.22
  * @since 22 Dec. 2012
  */
 public class WorldGroup {
@@ -87,13 +87,8 @@ public class WorldGroup {
      *
      * @param world The name of the world to remove from this one
      */
-    public void removeWorld(String world) {
-        for (int idx = 0; idx < worlds.size(); idx++) {
-            if (worlds.get(idx).equals(world)) {
-                worlds.remove(idx);
-                return;
-            }
-        }
+    public boolean removeWorld(String world) {
+        return worlds.remove(world);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.minepop.servegame.admintoggle;
 
+
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -14,6 +15,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,20 +25,22 @@ import org.bukkit.plugin.java.JavaPlugin;
  * To-do: //////////////////////////////////////////////////////////////////////
  * A command to apply changes to a snapshot on all world groups ////////////////
  * More admin commands to manage others' snapshots /////////////////////////////
+ * Save ItemStack metadata /////////////////////////////////////////////////////
  */
 /**
  *
  * @author Blir
- * @version 1.1.0 Beta
- * @since 22 Dec. 2012
+ * @version 1.1.22
+ * @since 31 May 2013
  */
 public class Admin extends JavaPlugin implements Listener {
 
     private final ArrayList<User> users = new ArrayList<>(0);
     private final ArrayList<WorldGroup> worldGroups = new ArrayList<>(0);
     private final int README_VERSION = 2;
-    private String folder;
-    private boolean vault, loadBalance, loadHunger, loadGameMode, loadExp, backup, loadedProperly = true;
+    private File snapFile, snapFileBackup, wgFile;
+    private boolean vault, loadBalance, loadHunger, loadGameMode, loadExp, backup,
+            loadedProperly = true;
     private Economy econ = null;
 
     /**
@@ -42,7 +48,6 @@ public class Admin extends JavaPlugin implements Listener {
      */
     @Override
     public void onEnable() {
-        folder = getDataFolder().getPath();
         vault = getServer().getPluginManager().isPluginEnabled("Vault");
         if (vault) {
             RegisteredServiceProvider<Economy> rsp;
@@ -61,11 +66,14 @@ public class Admin extends JavaPlugin implements Listener {
         backup = getConfig().getBoolean("snapshots.backup");
         getServer().getPluginManager().registerEvents(this, this);
         if (!getDataFolder().isDirectory()) {
-            getDataFolder().mkdir();
+            getDataFolder().mkdirs();
         }
+        snapFile = new File(getDataFolder().getPath() + "/snapshots.properties");
+        snapFileBackup = new File(getDataFolder().getPath() + "/snapshots_backup.properties");
+        wgFile = new File(getDataFolder().getPath() + "/linkedworlds.properties");
         load();
         if (!loadedProperly) {
-            getLogger().warning("Since the plugin did not load properly, it will"
+            getLogger().warning("Since the plugin did not load properly, it will "
                     + "not save upon disabling. You will need to manually save or correct the error in "
                     + "the file, if there is one. If this issue persists, contact Blir at "
                     + "             http://dev.bukkit.org/profiles/Bliry/");
@@ -82,30 +90,10 @@ public class Admin extends JavaPlugin implements Listener {
                 && getDuplicates(new String[]{"world", "world_nether", "world_the_end"}).isEmpty()) {
             worldGroups.add(new WorldGroup("Default", new String[]{"world", "world_nether", "world_the_end"}));
         }
-        if (getConfig().getString("readme.version").equals(String.valueOf(README_VERSION))) {
-            return;
+        if (!getConfig().getString("readme.version").equals(String.valueOf(README_VERSION))) {
+            saveResource("README.txt", true);
+            getConfig().set("readme.version", README_VERSION);
         }
-        InputStream sourceFile = getResource("README.txt");
-        Scanner sourceFileReader = null;
-        PrintWriter destFileWriter = null;
-        try {
-            sourceFileReader = new Scanner(sourceFile);
-            destFileWriter = new PrintWriter(new File(folder + "/README.txt"));
-            while (sourceFileReader.hasNext()) {
-                destFileWriter.println(sourceFileReader.nextLine());
-            }
-        } catch (IOException | NullPointerException e) {
-            getLogger().warning("Error copying readme.txt");
-        } finally {
-            try {
-                sourceFileReader.close();
-                destFileWriter.close();
-                sourceFile.close();
-            } catch (IOException e) {
-                getLogger().warning("Error closing streams after copying readme.txt");
-            }
-        }
-        getConfig().set("readme.version", README_VERSION);
     }
 
     /**
@@ -140,6 +128,7 @@ public class Admin extends JavaPlugin implements Listener {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+
         User user = null;
         Player player = null;
         if (sender instanceof Player) {
@@ -151,8 +140,8 @@ public class Admin extends JavaPlugin implements Listener {
             case "adminswitch":
             case "asdf":
             case "adswitch":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 0) {
                     return false;
@@ -165,7 +154,8 @@ public class Admin extends JavaPlugin implements Listener {
                         player.sendMessage("§cThe snapshot \"legit\" doesn't exist!");
                     }
                 } else {
-                    if (!user.hasSnapshot("legit", getWorldGroupByWorld(player.getWorld().getName())) || user.getCurrentSnapshot() == user.getSnapshot("legit", getWorldGroupByWorld(player.getWorld().getName()))) {
+                    if (!user.hasSnapshot("legit", getWorldGroupByWorld(player.getWorld().getName()))
+                            || user.getCurrentSnapshot() == user.getSnapshot("legit", getWorldGroupByWorld(player.getWorld().getName()))) {
                         saveSnapshot(user, "legit", player, user.hasSnapshot("legit", getWorldGroupByWorld(player.getWorld().getName())));
                     }
                     if (loadSnapshot(user, "admin", player, null)) {
@@ -178,8 +168,8 @@ public class Admin extends JavaPlugin implements Listener {
                 return true;
             case "newsnapshot":
             case "newsnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 1) {
                     return false;
@@ -193,8 +183,8 @@ public class Admin extends JavaPlugin implements Listener {
             case "overwritesnapshot":
             case "overwritesnap":
             case "osnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 1) {
                     return false;
@@ -209,8 +199,8 @@ public class Admin extends JavaPlugin implements Listener {
             case "loadsnapshot":
             case "loadsnap":
             case "lsnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 1) {
                     return false;
@@ -224,39 +214,65 @@ public class Admin extends JavaPlugin implements Listener {
             case "loadothersnapshot":
             case "loadothersnap":
             case "losnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 2) {
                     return false;
                 }
-                User target = getUser(args[0]);
-                if (target != null) {
-                    if (loadSnapshot(user, args[1], player, target)) { // CHECK IF PLAYER EXISTS
+                if (isUserRegistered(args[0])) {
+                    User target = getUser(args[0]);
+                    if (loadSnapshot(user, args[1], player, target)) {
                         player.sendMessage("§a" + args[0] + "'s snapshot \"" + args[1] + "\" loaded!");
                     } else {
                         player.sendMessage("§cThe user \"" + args[0] + "\" does not have the snapshot \"" + args[1] + ".\"");
                     }
                 } else {
-                    player.sendMessage("§cThe user \"" + args[0] + "\" doesn't exist or isn't registered.");
+                    if (getServer().getPlayer(args[0]) == null) {
+                        player.sendMessage("§cThe user \"" + args[0] + "\" doesn't exist.");
+                    } else {
+                        player.sendMessage("§cThe user \"" + args[0] + "\" isn't registered.");
+                    }
                 }
                 return true;
-            case "mysnapshots":
-            case "mysnaps":
-            case "mysnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
-                    return true;
-                } else if (args.length != 0) {
-                    return false;
-                }
-                if (!user.getSnapshots().isEmpty()) {
-                    player.sendMessage("§aCurrent snapshots:");
-                    for (Snapshot snap : user.getSnapshots()) {
-                        player.sendMessage("§a" + snap.getName());
+            case "listsnapshots":
+            case "listsnaps":
+            case "listsnap":
+                if (user != null && player != null) {
+                    if (args.length != 0) {
+                        player.sendMessage("§c/listsnapshots");
+                        return true;
+                    }
+                    if (!user.getSnapshots().isEmpty()) {
+                        player.sendMessage("§aCurrent snapshots:");
+                        for (Snapshot snap : user.getSnapshots()) {
+                            player.sendMessage("§a" + snap.getName());
+                        }
+                    } else {
+                        player.sendMessage("§aYou have no snapshots.");
                     }
                 } else {
-                    player.sendMessage("§aYou have no snapshots.");
+                    if (args.length != 1) {
+                        sender.sendMessage("§c/listsnapshots <user name>");
+                        return true;
+                    }
+                    if (isUserRegistered(args[0])) {
+                        user = getUser(args[0]);
+                        if (!user.getSnapshots().isEmpty()) {
+                            sender.sendMessage("§a" + args[0] + "'s snapshots:");
+                            for (Snapshot snap : user.getSnapshots()) {
+                                sender.sendMessage("§a" + snap.getName());
+                            }
+                        } else {
+                            sender.sendMessage("§aThat user has no snapshots.");
+                        }
+                    } else {
+                        if (getServer().getPlayer(args[0]) == null) {
+                            sender.sendMessage("§cThat user doesn't exist.");
+                        } else {
+                            sender.sendMessage("§cThat user isn't registered.");
+                        }
+                    }
                 }
                 return true;
             case "deletesnapshot":
@@ -266,16 +282,35 @@ public class Admin extends JavaPlugin implements Listener {
             case "removesnashot":
             case "removesnap":
             case "rmsnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
-                    return true;
-                } else if (args.length != 1) {
-                    return false;
-                }
-                if (user.removeSnapshot(args[0], getWorldGroupByWorld(player.getWorld().getName()))) {
-                    player.sendMessage("§aSnapshot \"" + args[0] + "\" deleted!");
+                if (user != null && player != null) {
+                    if (args.length != 1) {
+                        player.sendMessage("§c/deletesnapshot <snapshot name>");
+                        return true;
+                    }
+                    if (user.removeSnapshot(args[0], getWorldGroupByWorld(player.getWorld().getName()))) {
+                        player.sendMessage("§aSnapshot \"" + args[0] + "\" deleted!");
+                    } else {
+                        player.sendMessage("§cThe snapshot \"" + args[0] + "\" doesn't exist!");
+                    }
                 } else {
-                    player.sendMessage("§cThe snapshot \"" + args[0] + "\" doesn't exist!");
+                    if (args.length != 3) {
+                        sender.sendMessage("§c/deletesnapshot <snapshot name> <user name> <world group>");
+                        return true;
+                    }
+                    if (isUserRegistered(args[1])) {
+                        user = getUser(args[1]);
+                        if (user.removeSnapshot(args[0], getWorldGroupByName(args[2]))) {
+                            sender.sendMessage("§aThe snapshot \"" + args[0] + "\" has been deleted from the world group \"" + args[2] + ".\"");
+                        } else {
+                            sender.sendMessage("§cThe snapshot \"" + args[0] + "\" doesn't exist in the world group \"" + args[2] + ".\"");
+                        }
+                    } else {
+                        if (getServer().getPlayer(args[1]) == null) {
+                            sender.sendMessage("§cThe user \"" + args[1] + "\" doesn't exist.");
+                        } else {
+                            sender.sendMessage("§cThe user \"" + args[1] + "\" isn't registered.");
+                        }
+                    }
                 }
                 return true;
             case "savesnapshots":
@@ -290,21 +325,35 @@ public class Admin extends JavaPlugin implements Listener {
             case "admincheck":
             case "adcheck":
             case "adc":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
-                    return true;
-                } else if (args.length != 0) {
-                    return false;
+                if (user != null && player != null) {
+                    if (args.length != 0) {
+                        player.sendMessage("§c/admincheck");
+                        return true;
+                    }
+                    player.sendMessage("§aAdmin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
+                } else {
+                    if (args.length != 1) {
+                        sender.sendMessage("§c/admincheck <user name>");
+                        return true;
+                    }
+                    if (isUserRegistered(args[0])) {
+                        sender.sendMessage("§aAdmin mode is " + (getUser(args[0]).isAdminModeEnabled() ? "enabled" : "disabled") + " for \"" + args[0] + ".\"");
+                    } else {
+                        if (getServer().getPlayer(args[0]) == null) {
+                            sender.sendMessage("§cThe user \"" + args[0] + "\" doesn't exist.");
+                        } else {
+                            sender.sendMessage("§cThe user \"" + args[0] + "\" isn't registered.");
+                        }
+                    }
                 }
-                player.sendMessage("§aAdmin mode is " + (user.isAdminModeEnabled() ? "enabled." : "disabled."));
                 return true;
             case "undosnapshot":
             case "undosnaps":
             case "undosnap":
             case "usnaps":
             case "usnap":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 0) {
                     return false;
@@ -316,8 +365,8 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case "deleteallsnapshots":
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage("You must be a player to use this command!");
+                if (user == null || player == null) {
+                    sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
                 } else if (args.length != 1 || !args[0].equals("CONFIRM")) {
                     return false;
@@ -338,7 +387,7 @@ public class Admin extends JavaPlugin implements Listener {
                     } else {
                         sender.sendMessage("§a" + regUser.getName() + "'s snapshots: ");
                         for (Snapshot snap : regUser.getSnapshots()) {
-                            sender.sendMessage("§a\"" + snap.getName() + "\"in the "
+                            sender.sendMessage("§a\"" + snap.getName() + "\" in the "
                                     + (getWorldGroupByWorld(snap.getWorld()) == null ? "world \"" + snap.getWorld()
                                     : "world group \"" + getWorldGroupByWorld(snap.getWorld()).getName()) + "\"");
                         }
@@ -440,7 +489,7 @@ public class Admin extends JavaPlugin implements Listener {
                 worlds = new String[args.length - 1];
                 for (int idx = 1; idx < args.length; idx++) {
                     if (getServer().getWorld(args[idx]) == null) {
-                        sender.sendMessage("§cThe world \"" + args[0] + "\" doesn't exist!");
+                        sender.sendMessage("§cThe world \"" + args[idx] + "\" doesn't exist!");
                         return true;
                     }
                     worlds[idx - 1] = args[idx];
@@ -474,38 +523,56 @@ public class Admin extends JavaPlugin implements Listener {
                 return true;
             case "movesnapshot":
             case "movesnap":
-                if (sender instanceof Player) {
+                if (user != null && player != null) {
                     if (args.length != 2) {
-                        return false;
+                        player.sendMessage("§c/movesnapshot <snapshot name> <destination world>");
+                        return true;
                     }
                     if (!user.hasSnapshot(args[0], getWorldGroupByWorld(player.getWorld().getName()))) {
-                        sender.sendMessage("§cYou do not have the snapshot \"" + args[1] + "\"");
+                        player.sendMessage("§cYou do not have the snapshot \"" + args[1] + "\"");
                         return true;
                     }
                     if (getServer().getWorld(args[1]) == null) {
-                        sender.sendMessage("§cThe world \"" + args[1] + "\" does not exist!");
+                        player.sendMessage("§cThe world \"" + args[1] + "\" does not exist!");
                         return true;
                     }
-                    user.getSnapshot(args[0], getWorldGroupByWorld(player.getWorld().getName())).setWorld(args[1]);
+                    if (user.getSnapshot(args[0], getWorldGroupByWorld(player.getWorld().getName())).setWorld(args[1])) {
+                        player.sendMessage("§aThe snapshot \"" + args[0] + "\" has been moved to the world \"" + args[1] + ".\"");
+                    } else {
+                        player.sendMessage("§aThe snapshot \"" + args[0] + "\" is already in the world \"" + args[1] + ".\"");
+                    }
                 } else {
                     if (args.length != 4) {
-                        return false;
+                        sender.sendMessage("§c/movesnapshot <snapshot name> <destination world> <user name> <world group of snapshot>");
+                        return true;
                     }
                     if (!isUserRegistered(args[2])) {
                         sender.sendMessage("§cThe user \"" + args[2] + "\" does not exist!");
                         return true;
                     }
                     if (!getUser(args[2]).hasSnapshot(args[0], getWorldGroupByName(args[3]))) {
-                        sender.sendMessage("§cYou do not have the snapshot \"" + args[0] + ".\"");
+                        sender.sendMessage("§c" + args[2] + " do not have the snapshot \"" + args[0] + ".\"");
                         return true;
                     }
                     if (getServer().getWorld(args[1]) == null) {
                         sender.sendMessage("§cThe world \"" + args[1] + "\" does not exist!");
                         return true;
                     }
-                    getUser(args[2]).getSnapshot(args[0], getWorldGroupByName(args[3])).setWorld(args[1]);
+                    if (getUser(args[2]).getSnapshot(args[0], getWorldGroupByName(args[3])).setWorld(args[1])) {
+                        sender.sendMessage("§a" + args[2] + "'s snapshot \"" + args[0] + "\" has been moved to the world \"" + args[1] + ".\"");
+                    } else {
+                        sender.sendMessage("§a" + args[2] + "'s snapshot \"" + args[0] + "\" is already in the world \"" + args[1] + ".\"");
+                    }
                 }
-                sender.sendMessage("§aThe snapshot \"" + args[0] + "\" has been moved to the world \"" + args[1] + ".\"");
+                return true;
+            case "admintoggle":
+                if (args.length != 1) {
+                    return false;
+                }
+                switch (args[0]) {
+                    default:
+                        sender.sendMessage("This command currently does nothing.");
+                }
                 return true;
         }
         return false;
@@ -625,7 +692,7 @@ public class Admin extends JavaPlugin implements Listener {
                 return false;
             }
         } else {
-            if (user.hasSnapshot(name, getWorldGroupByName(player.getWorld().getName()))) {
+            if (user.hasSnapshot(name, getWorldGroupByWorld(player.getWorld().getName()))) {
                 return false;
             } else {
                 snap = user.addSnapshot(name);
@@ -757,10 +824,9 @@ public class Admin extends JavaPlugin implements Listener {
     }
 
     private void save(boolean backup) {
-        File file = new File(folder + "/snapshots" + (backup ? "_backup" : "") + ".properties");
         FileOutputStream fos;
         try {
-            fos = new FileOutputStream(file);
+            fos = new FileOutputStream((backup ? snapFileBackup : snapFile));
         } catch (IOException e) {
             getLogger().severe("Failed to open output stream!");
             return;
@@ -794,6 +860,19 @@ public class Admin extends JavaPlugin implements Listener {
                             p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
                                     + "/IEnchantLevel/" + idx4, String.valueOf(inv.getEnchantmentLevel(ench)));
                             idx4++;
+                        }
+                        if (inv.hasItemMeta()) {
+                            ItemMeta meta = inv.getItemMeta();
+                            if (meta instanceof BookMeta) {
+                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3 + "/MetaType", "Book");
+                                String data = "";
+                                for (int idx5 = 0; idx5 < meta.getLore().toArray().length; idx5++) {
+                                    data += meta.getLore().toArray()[idx5];
+                                }
+                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3 + "/MetaData", data);
+                            } else if (meta instanceof MapMeta) {
+                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3 + "/MetaType", "Map");
+                            }
                         }
                     } else {
                         p.setProperty(user.getName() + "/" + snap.getName() + "/IType/" + idx3, "null");
@@ -853,10 +932,8 @@ public class Admin extends JavaPlugin implements Listener {
         } catch (IOException e) {
             getLogger().severe("Error closing the output stream after saving snapshots! Data might not be saved.");
         }
-
-        file = new File(folder + "/linkedworlds.properties");
         try {
-            fos = new FileOutputStream(file);
+            fos = new FileOutputStream(wgFile);
         } catch (FileNotFoundException e) {
             getLogger().severe("linkedworlds.properties file missing!");
             return;
@@ -884,13 +961,13 @@ public class Admin extends JavaPlugin implements Listener {
     }
 
     private void load() {
-        File file = new File(folder + "/snapshots.properties");
-        if (!file.exists()) {
+        if (!snapFile.exists() || !wgFile.exists()) {
             save(false);
+            return;
         }
         FileInputStream fis = null;
         try {
-            fis = new FileInputStream(file);
+            fis = new FileInputStream(snapFile);
         } catch (FileNotFoundException e) {
             getLogger().severe("snapshots.properties file missing!");
             return;
@@ -1128,12 +1205,11 @@ public class Admin extends JavaPlugin implements Listener {
         } catch (IOException e) {
             getLogger().warning("Error closing input stream after loading snapshots.");
         }
-        file = new File(folder + "/linkedworlds.properties");
-        if (!file.exists()) {
+        if (!wgFile.exists()) {
             save(false);
         }
         try {
-            fis = new FileInputStream(file);
+            fis = new FileInputStream(wgFile);
         } catch (FileNotFoundException e) {
             getLogger().severe("linkedworlds.properties file missing!");
             return;
@@ -1150,6 +1226,7 @@ public class Admin extends JavaPlugin implements Listener {
             worldGroupCount = Integer.parseInt(p.getProperty("World Group Count"));
         } catch (NullPointerException | NumberFormatException e) {
             getLogger().log(Level.SEVERE, "Error loading world groups: World Group Count");
+            return;
         }
         for (int idx = 0; idx < worldGroupCount; idx++) {
             WorldGroup worldGroup = new WorldGroup(p.getProperty(String.valueOf(idx)));

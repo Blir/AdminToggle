@@ -6,8 +6,8 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir 
- * @version 1.1.0 Beta
- * @since 22 Dec. 2012
+ * @version 1.1.22
+ * @since 30 May 2013
  */
 public class Snapshot {
 
@@ -255,9 +255,14 @@ public class Snapshot {
      * Sets the name of the world the Snapshot belongs to.
      * 
      * @param name The name of the world the Snapshot will be set to
+     * @return true if the world was changed
      */
-    public void setWorld(String name) {
+    public boolean setWorld(String name) {
+        if (world != null && world.equals(name)) {
+            return false;
+        }
         world = name;
+        return true;
     }
 
     /**

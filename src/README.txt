@@ -115,6 +115,7 @@ MoveSnapshot:
 
     Usage: /MoveSnapshot <snapshot name> <target world> <user of the snapshot if
     from the console> <world group of the snapshot if from the console>
+    Aliases: movesnap
 
 UndoSnapshot:
 
