@@ -1,19 +1,17 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version: 1.1.0 Beta
-Date: 22 Dec. 2012
+Version: 1.2.0
+Date: 7 June 2013
 
 By Blir
 
 AdminToggle is a Minecraft plugin intended for server admins to quickly toggle
 between two or more player profiles. These profiles (or "snapshots") contain the
-players inventory, equipped items, hunger, game mode, and exp.
+player's inventory, equipped items, hunger, game mode, and exp.
 
 The source code on GitHub: https://github.com/Blir/AdminToggle
 
 The project on Dev Bukkit: http://dev.bukkit.org/server-mods/admintoggle/
-
-Blir's Sponsored Minecraft Server: minepop.servegame.com
 
 ==== Commands: ====
 
@@ -113,9 +111,15 @@ MoveSnapshot:
 
     Moves the specified snapshot to the specified world.
 
-    Usage: /MoveSnapshot <snapshot name> <target world> <user of the snapshot if
-    from the console> <world group of the snapshot if from the console>
+    Usage: /MoveSnapshot <snapshot name> <target world>
     Aliases: movesnap
+
+SnapshotType:
+
+    Changes the visibility of the specified snapshot.
+
+    Usage: /SnapshotType <snapshot name> <global|private|grouped>
+    Aliases: snaptype
 
 UndoSnapshot:
 

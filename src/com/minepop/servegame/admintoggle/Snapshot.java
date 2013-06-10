@@ -5,18 +5,23 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  *
- * @author Blir 
- * @version 1.1.22
- * @since 30 May 2013
+ * @author Blir
+ * @version 1.2.0 Beta
+ * @since 7 June 2013
  */
 public class Snapshot {
 
+    public enum Visibility {
+
+        GLOBAL, PRIVATE, GROUPED
+    }
     private String user, name, world;
     private ItemStack[] inv, armor;
     private float exp, ex, sat;
     private int level, food;
     private GameMode gm;
     private double balance = 0.0;
+    private Visibility type = Visibility.GLOBAL;
 
     /**
      * Creates a new Snapshot belonging to the given user and with the given
@@ -43,8 +48,9 @@ public class Snapshot {
      * @param ex The exhaustion of the Snapshot
      * @param food The food level of the Snapshot
      * @param sat The saturation of the Snapshot
+     * @param type The visibility of the Snapshot
      */
-    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat, double balance, String world) {
+    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat, double balance, String world, Visibility type) {
         this.user = user;
         this.name = name;
         this.inv = inv;
@@ -57,6 +63,7 @@ public class Snapshot {
         this.sat = sat;
         this.balance = balance;
         this.world = world;
+        this.type = type;
     }
 
     /**
@@ -157,14 +164,23 @@ public class Snapshot {
     public double getBalance() {
         return balance;
     }
-    
+
     /**
      * Returns the name of the world the Snapshot belongs to.
-     * 
+     *
      * @return The name of the world
      */
     public String getWorld() {
         return world;
+    }
+
+    /**
+     * Returns the Visibility of the Snapshot.
+     *
+     * @return The Visibility
+     */
+    public Visibility getVisibility() {
+        return type;
     }
 
     /**
@@ -250,10 +266,10 @@ public class Snapshot {
     public void setBalance(double balance) {
         this.balance = balance;
     }
-    
+
     /**
      * Sets the name of the world the Snapshot belongs to.
-     * 
+     *
      * @param name The name of the world the Snapshot will be set to
      * @return true if the world was changed
      */
@@ -262,6 +278,20 @@ public class Snapshot {
             return false;
         }
         world = name;
+        return true;
+    }
+
+    /**
+     * Sets the Visibility of the Snapshot.
+     *
+     * @param type The Visibility the Snapshot will be set to
+     * @return true if the Visibility was changed
+     */
+    public boolean setVisibility(Visibility type) {
+        if (this.type == type) {
+            return false;
+        }
+        this.type = type;
         return true;
     }
 
@@ -285,6 +315,6 @@ public class Snapshot {
                 inventories[1][idx] = armor[idx].clone();
             }
         }
-        return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance, world);
+        return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance, world, type);
     }
 }

@@ -2,18 +2,19 @@ package com.minepop.servegame.admintoggle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
  *
  * @author Blir
- * @version 1.1.22
- * @since 22 Dec. 2012
+ * @version 1.2.0 Beta
+ * @since 10 June 2013
  */
 public class WorldGroup {
 
     private String name;
-    private ArrayList<String> worlds = new ArrayList<>(1);
+    private List<String> worlds = new ArrayList<>(1);
 
     /**
      * Creates a new WorldGroup with the specified name.
@@ -69,8 +70,8 @@ public class WorldGroup {
      *
      * @param world The name of the world to add to this WorldGroup
      */
-    public void addWorld(String world) {
-        worlds.add(world);
+    public boolean addWorld(String world) {
+        return worlds.add(world);
     }
 
     /**
@@ -78,8 +79,8 @@ public class WorldGroup {
      *
      * @param worlds The names of the worlds to add to this WorldGroup
      */
-    public void addWorlds(String[] worlds) {
-        this.worlds.addAll(Arrays.asList(worlds));
+    public boolean addWorlds(String[] worlds) {
+        return this.worlds.addAll(Arrays.asList(worlds));
     }
 
     /**
@@ -121,7 +122,7 @@ public class WorldGroup {
      *
      * @return The LinkedWorlds linked to this WorldGroup
      */
-    public ArrayList<String> getWorlds() {
+    public List<String> getWorlds() {
         return worlds;
     }
 
@@ -141,5 +142,9 @@ public class WorldGroup {
         int hash = 7;
         hash = 61 * hash + Objects.hashCode(name);
         return hash;
+    }
+    
+    public boolean isEmpty() {
+        return worlds.isEmpty();
     }
 }

@@ -1,7 +1,7 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version: 1.1.0 Beta
-Date: 22 Dec. 2012
+Version: 1.2.0 Beta
+Date: 10 June 2013
 
 By Blir
 
@@ -11,11 +11,9 @@ players inventory, equipped items, health, hunger, game mode, and exp.
 
 ==== Downloads: ====
 
-v1.1,22:https://dl.dropboxusercontent.com/u/103112496/plugins/AdminToggle/Release/1.1.22/AdminToggle.jar
+v1.2.0 Beta: https://dl.dropboxusercontent.com/u/103112496/plugins/AdminToggle/Release/1.2.0%20Beta/AdminToggle.jar
 
 The project on Dev Bukkit: http://dev.bukkit.org/server-mods/admintoggle/
-
-Blir's Sponsored Minecraft Server: http://minepop.servegame.com
 
 ==== Commands: ====
 
@@ -28,7 +26,7 @@ AdminSwitch:
     load the "admin" snapshot. If the "admin" snapshot does not exist,
     your inventory is not changed when switching to "admin" mode nor is 
     the "admin" snapshot saved as "admin" upon switching back to "legit" 
-    mode. You can create an admin inventory simply by entering "/snap 
+    mode. You can create an admin inventory simply by entering "/newsnap 
     admin" (or "/osnap admin" to overwrite an existing snapshot). When you
     disable admin mode, the plugin will save your current set-up as "temp"
     to help prevent accidental item loss, and then load the "legit"
@@ -115,8 +113,16 @@ MoveSnapshot:
 
     Moves the specified snapshot to the specified world.
 
-    Usage: /MoveSnapshot <snapshot name> <target world> <user of the snapshot if
-    from the console> <world group of the snapshot if from the console>
+    Usage: /MoveSnapshot <snapshot name> <target world>
+    Aliases: movesnap
+
+
+SnapshotType:
+
+    Changes the visibility of the specified snapshot.
+
+    Usage: /SnapshotType <snapshot name> <global|private|grouped>
+    Aliases: snaptype
 
 
 UndoSnapshot:
@@ -165,4 +171,6 @@ DeleteWorldGroup:
     Usage: /DeleteWorldGroup <world group name>
     Aliases: None for now.
 
-Notes: None of the commands are case-sensitive unless otherwise specified.
+Notes: 
+None of the commands are case-sensitive unless otherwise specified.
+Some commands are available from the console and require different arguments.
