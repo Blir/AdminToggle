@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.0 Beta
+version: 1.2.1
 author: Blir
 softdepend: [Vault]
 commands:
@@ -119,7 +119,7 @@ commands:
     aliases: snaptype
   admintoggle:
     description: Returns help for this plugin
-    usage: §c/<command> help <page>
+    usage: §c"/<command> help <page>" Or "/<command> version" for version info
     permission: admintoggle.admintoggle
     permission-message: §cYou don't have permission to use that command.
 permissions:

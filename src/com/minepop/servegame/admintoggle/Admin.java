@@ -19,6 +19,7 @@ import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.minepop.servegame.admintoggle.Snapshot.Visibility;
+import java.text.DateFormat;
 
 /**
  * To-do: //////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ import com.minepop.servegame.admintoggle.Snapshot.Visibility;
  *
  * @author Blir
  * @version 1.2.0 Beta
- * @since 10 June 2013
+ * @since 13 June 2013
  */
 public class Admin extends JavaPlugin implements Listener {
 
@@ -67,7 +68,7 @@ public class Admin extends JavaPlugin implements Listener {
             getDataFolder().mkdirs();
         }
         snapFile = new File(getDataFolder().getPath() + "/snapshots.properties");
-        snapFileBackup = new File(getDataFolder().getPath() + "/snapshots_backup.properties");
+        snapFileBackup = new File(getDataFolder().getPath() + "/snapshots_backup - " + DateFormat.getDateInstance().format(Calendar.getInstance().getTime()) + ".properties");
         wgFile = new File(getDataFolder().getPath() + "/linkedworlds.properties");
         mkd = getConfig().getBoolean("worldgroups.makedefault");
         User.setAdmin(this);
@@ -251,7 +252,7 @@ public class Admin extends JavaPlugin implements Listener {
                     if (!user.getSnapshots().isEmpty()) {
                         player.sendMessage("§aCurrent snapshots:");
                         for (Snapshot snap : user.getSnapshots()) {
-                            player.sendMessage("§a" + snap.getName());
+                            player.sendMessage("§a\"§9" + snap.getName() + "§a\" in the world \"§9" + snap.getWorld() + "§a\" of visibility type §9" + snap.getVisibility() + "§a.");
                         }
                     } else {
                         player.sendMessage("§aYou have no snapshots.");
@@ -267,7 +268,7 @@ public class Admin extends JavaPlugin implements Listener {
                         if (!user.getSnapshots().isEmpty()) {
                             sender.sendMessage("§9" + args[0] + "§a's snapshots:");
                             for (Snapshot snap : user.getSnapshots()) {
-                                sender.sendMessage("§a" + snap.getName());
+                                sender.sendMessage("§a\"§9" + snap.getName() + "§a\" in the world \"§9" + snap.getWorld() + "§a\" of visibility type §9" + snap.getVisibility() + "§a.");
                             }
                         } else {
                             sender.sendMessage("§9" + args[0] + "§a has no snapshots.");
@@ -340,7 +341,7 @@ public class Admin extends JavaPlugin implements Listener {
                         player.sendMessage("§c/admincheck");
                         return true;
                     }
-                    player.sendMessage("§aAdmin mode is §9" + (user.isAdminModeEnabled() ? "enabled." : "disabled.") + "§a.");
+                    player.sendMessage("§aAdmin mode is §9" + (user.isAdminModeEnabled() ? "enabled" : "disabled") + "§a.");
                 } else {
                     if (args.length != 1) {
                         sender.sendMessage("§cIncorrect amount of arguments!");
@@ -494,7 +495,7 @@ public class Admin extends JavaPlugin implements Listener {
                     }
                     worlds[idx - 1] = args[idx];
                 }
-                ungroupWorlds(worlds);
+                ungroupWorlds(Arrays.asList(worlds));
                 sender.sendMessage("§9" + getWorldGroupByName(args[0]).removeWorlds(worlds)
                         + "§a world(s) have been removed from the world group \"§9" + args[0] + "§a.\"");
                 return true;
@@ -516,7 +517,7 @@ public class Admin extends JavaPlugin implements Listener {
                         }
                     }
                 }
-                ungroupWorlds((String[]) wg.getWorlds().toArray());
+                ungroupWorlds(wg.getWorlds());
                 worldGroups.remove(wg);
                 sender.sendMessage("§aThe world group \"§9" + args[0] + "§a\" has been deleted.");
                 return true;
@@ -657,13 +658,16 @@ public class Admin extends JavaPlugin implements Listener {
                     switch (args[0]) {
                         case "test":
                             throw new NullPointerException("Test Exception");
+                        case "version":
+                            sender.sendMessage(getDescription().getVersion());
+                            break;
                         case "help":
                         default:
-                            getServer().dispatchCommand(sender, "/help admintoggle " + (args.length > 1 ? args[1] : ""));
+                            getServer().dispatchCommand(sender, "help admintoggle " + (args.length > 1 ? args[1] : ""));
                             break;
                     }
                 } else {
-                    getServer().dispatchCommand(sender, "/help admintoggle");
+                    getServer().dispatchCommand(sender, "help admintoggle");
                 }
                 return true;
         }
@@ -788,17 +792,13 @@ public class Admin extends JavaPlugin implements Listener {
             }
             snap = user.addSnapshot(name);
             snap.setWorld(player.getWorld().getName());
-            switch (name) {
-                case "admin":
-                    snap.setVisibility(Visibility.GLOBAL);
-                    break;
-                default:
-                    snap.setVisibility(Visibility.PRIVATE);
-                    break;
-            }
+            snap.setVisibility(Visibility.PRIVATE);
         }
         if (name.equals("legit") || name.equals("temp")) {
             snap.setVisibility(isInWorldGroup(snap.getWorld()) ? Visibility.GROUPED : Visibility.PRIVATE);
+        }
+        if (name.equals("admin")) {
+            snap.setVisibility(Visibility.GLOBAL);
         }
         snap.setInv(player.getInventory().getContents(), player.getInventory().getArmorContents());
         snap.setGameMode(player.getGameMode());
@@ -940,7 +940,7 @@ public class Admin extends JavaPlugin implements Listener {
         return conflict;
     }
 
-    private void ungroupWorlds(String[] worlds) {
+    private void ungroupWorlds(List<String> worlds) {
         for (String world : worlds) {
             for (User user : users) {
                 for (Snapshot snap : user.getSnapshots()) {
@@ -1031,17 +1031,6 @@ public class Admin extends JavaPlugin implements Listener {
                         p.setProperty(user.getName() + "/" + snap.getName() + "/AType/" + idx3, "null");
                     }
                 }
-                /*switch (snap.getGameMode()) {
-                 case CREATIVE:
-                 p.setProperty(user.getName() + "/GameMode/" + snap.getName(), "creative");
-                 break;
-                 case SURVIVAL:
-                 p.setProperty(user.getName() + "/GameMode/" + snap.getName(), "survival");
-                 break;
-                 case ADVENTURE:
-                 p.setProperty(user.getName() + "/GameMode/" + snap.getName(), "adventure");
-                 break;
-                 }*/
                 p.setProperty(user.getName() + "/GameMode/" + snap.getName(), String.valueOf(snap.getGameMode()));
                 p.setProperty(user.getName() + "/Exp/" + snap.getName(), String.valueOf(snap.getExp()));
                 p.setProperty(user.getName() + "/Level/" + snap.getName(), String.valueOf(snap.getLevel()));
@@ -1244,28 +1233,6 @@ public class Admin extends JavaPlugin implements Listener {
                     }
                 }
                 GameMode gm;
-                /*try {
-                 switch (p.getProperty(user.getName() + "/GameMode/" + name)) {
-                 case "creative":
-                 gm = GameMode.CREATIVE;
-                 break;
-                 case "survival":
-                 gm = GameMode.SURVIVAL;
-                 break;
-                 case "adventure":
-                 gm = GameMode.ADVENTURE;
-                 break;
-                 default:
-                 getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
-                 new Object[]{user.getName(), name});
-                 gm = GameMode.SURVIVAL;
-                 break;
-                 }
-                 } catch (NullPointerException e) {
-                 getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
-                 new Object[]{user.getName(), name});
-                 gm = GameMode.SURVIVAL;
-                 }*/
                 try {
                     gm = GameMode.valueOf(p.getProperty(user.getName() + "/GameMode/" + name).toUpperCase());
                 } catch (NullPointerException | IllegalArgumentException e) {
@@ -1338,14 +1305,14 @@ public class Admin extends JavaPlugin implements Listener {
                 try {
                     type = Visibility.valueOf(p.getProperty(user.getName() + "/Visibility/" + name).toUpperCase());
                 } catch (NullPointerException | IllegalArgumentException e) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to grouped",
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to private",
                             new Object[]{user.getName(), name});
-                    type = Visibility.GROUPED;
+                    type = Visibility.PRIVATE;
                 }
                 if (type == null) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to grouped",
+                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to private",
                             new Object[]{user.getName(), name});
-                    type = Visibility.GROUPED;
+                    type = Visibility.PRIVATE;
                 }
                 try {
                     Snapshot snap = new Snapshot(
