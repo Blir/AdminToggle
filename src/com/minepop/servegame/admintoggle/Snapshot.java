@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
- * @version 1.2.0 Beta
+ * @version 1.2.2
  * @since 7 June 2013
  */
 public class Snapshot {

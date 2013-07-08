@@ -19,7 +19,6 @@ import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.minepop.servegame.admintoggle.Snapshot.Visibility;
-import java.text.DateFormat;
 
 /**
  * To-do: //////////////////////////////////////////////////////////////////////
@@ -29,8 +28,8 @@ import java.text.DateFormat;
 /**
  *
  * @author Blir
- * @version 1.2.0 Beta
- * @since 13 June 2013
+ * @version 1.2.2
+ * @since 6 July 2013
  */
 public class Admin extends JavaPlugin implements Listener {
 
@@ -68,10 +67,10 @@ public class Admin extends JavaPlugin implements Listener {
             getDataFolder().mkdirs();
         }
         snapFile = new File(getDataFolder().getPath() + "/snapshots.properties");
-        snapFileBackup = new File(getDataFolder().getPath() + "/snapshots_backup - " + DateFormat.getDateInstance().format(Calendar.getInstance().getTime()) + ".properties");
+        snapFileBackup = new File(getDataFolder().getPath() + "/snapshots_backup - " + java.text.DateFormat.getDateInstance().format(Calendar.getInstance().getTime()) + ".properties");
         wgFile = new File(getDataFolder().getPath() + "/linkedworlds.properties");
         mkd = getConfig().getBoolean("worldgroups.makedefault");
-        User.setAdmin(this);
+        User.setPlugin(this);
         load();
         if (!loadedProperly) {
             getLogger().warning("Since the plugin did not load properly, it will "
@@ -148,7 +147,7 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("§cIncorrect amount of arguments!");
                     return false;
                 }
-                if (user.isAdminModeEnabled()) {
+                if (user.isAdmin()) {
                     saveSnapshot(user, "temp", player, user.hasSnapshot("temp", player.getWorld().getName()));
                     if (loadSnapshot(user, "legit", player, null)) {
                         player.sendMessage("§aSnapshot \"§9legit§a\" loaded.");
@@ -157,7 +156,7 @@ public class Admin extends JavaPlugin implements Listener {
                     }
                 } else {
                     Snapshot snap = user.getSnapshot("legit", player.getWorld().getName());
-                    if (user.getCurrentSnapshot() == snap || snap == null) {
+                    if (user.getCurrentSnapshot() == snap || user.getCurrentSnapshot() == null) {
                         saveSnapshot(user, "legit", player, snap != null);
                     }
                     if (loadSnapshot(user, "admin", player, null)) {
@@ -243,6 +242,9 @@ public class Admin extends JavaPlugin implements Listener {
             case "listsnapshots":
             case "listsnaps":
             case "listsnap":
+            case "mysnapshots":
+            case "mysnaps":
+            case "mysnap":
                 if (user != null && player != null) {
                     if (args.length != 0) {
                         player.sendMessage("§cIncorrect amount of arguments!");
@@ -341,7 +343,7 @@ public class Admin extends JavaPlugin implements Listener {
                         player.sendMessage("§c/admincheck");
                         return true;
                     }
-                    player.sendMessage("§aAdmin mode is §9" + (user.isAdminModeEnabled() ? "enabled" : "disabled") + "§a.");
+                    player.sendMessage("§aAdmin mode is §9" + (user.isAdmin() ? "enabled" : "disabled") + "§a.");
                 } else {
                     if (args.length != 1) {
                         sender.sendMessage("§cIncorrect amount of arguments!");
@@ -349,7 +351,7 @@ public class Admin extends JavaPlugin implements Listener {
                         return true;
                     }
                     if (isUserRegistered(args[0])) {
-                        sender.sendMessage("§aAdmin mode is §9" + (getUser(args[0]).isAdminModeEnabled() ? "enabled" : "disabled") + "§a for \"§9" + args[0] + "§a.\"");
+                        sender.sendMessage("§aAdmin mode is §9" + (getUser(args[0]).isAdmin() ? "enabled" : "disabled") + "§a for \"§9" + args[0] + "§a.\"");
                     } else {
                         if (getServer().getPlayer(args[0]) == null) {
                             sender.sendMessage("§cThe user \"§9" + args[0] + "§c\" doesn't exist.");
@@ -510,13 +512,6 @@ public class Admin extends JavaPlugin implements Listener {
                     return true;
                 }
                 wg = getWorldGroupByName(args[0]);
-                for (User regUser : users) {
-                    for (Snapshot snap : regUser.getSnapshots()) {
-                        if (snap.getVisibility() == Visibility.GROUPED && wg.isMember(snap.getWorld())) {
-                            snap.setVisibility(Visibility.PRIVATE);
-                        }
-                    }
-                }
                 ungroupWorlds(wg.getWorlds());
                 worldGroups.remove(wg);
                 sender.sendMessage("§aThe world group \"§9" + args[0] + "§a\" has been deleted.");
@@ -965,7 +960,9 @@ public class Admin extends JavaPlugin implements Listener {
         for (int idx = 0; idx < users.size(); idx++) {
             User user = users.get(idx);
             p.setProperty("User/" + idx, user.getName());
-            p.setProperty("Admin/" + idx, String.valueOf(user.isAdminModeEnabled()));
+            p.setProperty("Admin/" + idx, String.valueOf(user.isAdmin()));
+            p.setProperty("Current Snapshot/" + idx, user.getCurrentSnapshot() != null ? user.getCurrentSnapshot().getName() : "null");
+            p.setProperty("Current Snapshot World/" + idx, user.getCurrentSnapshot() != null ? user.getCurrentSnapshot().getWorld() : "null");
             p.setProperty(user.getName() + "/Snapshot Count", String.valueOf(user.getSnapshots().size()));
             for (int idx2 = 0; idx2 < user.getSnapshots().size(); idx2++) {
                 Snapshot snap = user.getSnapshots().get(idx2);
@@ -1323,6 +1320,15 @@ public class Admin extends JavaPlugin implements Listener {
                             new Object[]{user.getName(), name});
                     loadedProperly = false;
                 }
+            }
+            try {
+                Snapshot snap = user.getSnapshot(p.getProperty("Current Snapshot/" + idx), p.getProperty("Current Snapshot World/" + idx));
+                if (snap != null) {
+                    user.logSnapshot(snap);
+                }
+            } catch (NullPointerException e) {
+                getLogger().log(Level.WARNING, "Error loading {0}''s current Snapshot",
+                        user.getName());
             }
         }
         try {

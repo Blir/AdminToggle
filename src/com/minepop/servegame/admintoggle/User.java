@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  *
  * @author Blir
- * @version 1.2.0 Beta
+ * @version 1.2.2
  * @since 8 June 2012
  */
 public class User {
@@ -15,7 +15,7 @@ public class User {
     private Snapshot currentSnap = null;
     private int snapLogIdx = 0;
     private boolean adminMode = false;
-    private static Admin admin;
+    private static Admin plugin;
 
     /**
      * Creates a new User with the given name.
@@ -78,7 +78,7 @@ public class User {
                     case GLOBAL:
                         return snap;
                     case GROUPED:
-                        if (admin.getWorldGroupByWorld(snap.getWorld()).isMember(world)) {
+                        if (plugin.getWorldGroupByWorld(snap.getWorld()).isMember(world)) {
                             return snap;
                         }
                         break;
@@ -170,7 +170,7 @@ public class User {
      *
      * @return The value of admin, true if admin mode is enabled
      */
-    public boolean isAdminModeEnabled() {
+    public boolean isAdmin() {
         return adminMode;
     }
 
@@ -203,7 +203,7 @@ public class User {
         return currentSnap;
     }
 
-    protected static void setAdmin(Admin admin) {
-        User.admin = admin;
+    protected static void setPlugin(Admin plugin) {
+        User.plugin = plugin;
     }
 }

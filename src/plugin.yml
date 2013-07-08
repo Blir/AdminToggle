@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.1
+version: 1.2.2
 author: Blir
 softdepend: [Vault]
 commands:
@@ -33,7 +33,7 @@ commands:
     usage: §c/<command>
     permission: admintoggle.listsnapshots
     permission-message: §cYou don't have permission to use that command.
-    aliases: [listsnaps, listsnap]
+    aliases: [listsnaps, listsnap, mysnapshots, mysnaps, mysnap]
   allsnapshots:
     description: Lists all snapshots.
     usage: §c/<command>

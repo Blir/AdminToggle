@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  *
  * @author Blir
- * @version 1.2.0 Beta
+ * @version 1.2.2
  * @since 10 June 2013
  */
 public class WorldGroup {
