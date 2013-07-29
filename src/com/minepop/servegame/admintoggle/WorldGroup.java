@@ -14,7 +14,7 @@ import java.util.Objects;
 public class WorldGroup {
 
     private String name;
-    private List<String> worlds = new ArrayList<>(1);
+    private List<String> worlds = new ArrayList<String>(0);
 
     /**
      * Creates a new WorldGroup with the specified name.

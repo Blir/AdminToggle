@@ -1,7 +1,7 @@
 |=================================ADMIN TOGGLE=================================|
 
-Version: 1.2.0
-Date: 7 June 2013
+Version: 1.2.3
+Date: 28 July 2013
 
 By Blir
 
@@ -24,7 +24,7 @@ AdminSwitch:
     load the "admin" snapshot. If the "admin" snapshot does not exist,
     your inventory is not changed when switching to "admin" mode nor is 
     the "admin" snapshot saved as "admin" upon switching back to "legit" 
-    mode. You can create an admin inventory simply by entering "/snap 
+    mode. You can create an admin inventory simply by entering "/newsnap 
     admin" (or "/osnap admin" to overwrite an existing snapshot). When you
     disable admin mode, the plugin will save your current set-up as "temp"
     to help prevent accidental item loss, and then load the "legit"
@@ -58,7 +58,7 @@ SaveSnapshots:
     there was a problem loading.
 
     Usage: /SaveSnapshots
-    Aliases: savesnap, savesnaps
+    Alias: savesnaps
 
 LoadSnapshot:
 
@@ -81,14 +81,14 @@ MySnapshots:
     Lists snapshots saved for your user.
 
     Usage: /MySnapshots
-    Aliases: mysnaps, mysnap
+    Alias: mysnaps
 
 AllSnapshots:
 
     Lists snapshots saved for all users.
 
     Usage: /AllSnapshots
-    Aliases: allsnaps, allsnap
+    Alias: allsnaps
 
 DeleteSnapshot:
 
@@ -112,14 +112,14 @@ MoveSnapshot:
     Moves the specified snapshot to the specified world.
 
     Usage: /MoveSnapshot <snapshot name> <target world>
-    Aliases: movesnap
+    Alias: movesnap
 
 SnapshotType:
 
     Changes the visibility of the specified snapshot.
 
     Usage: /SnapshotType <snapshot name> <global|private|grouped>
-    Aliases: snaptype
+    Alias: snaptype
 
 UndoSnapshot:
 
@@ -127,7 +127,7 @@ UndoSnapshot:
     without having to use /LoadSnapshot.
 
     Usage: /UndoSnapshot
-    Aliases: undosnap, undosnaps, usnap, usnaps
+    Aliases: undosnap, usnap
 
 AdminCheck:
 

@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.minepop.servegame.admintoggle.Admin
-version: 1.2.2
+version: 1.2.3
 author: Blir
 softdepend: [Vault]
 commands:
@@ -33,13 +33,13 @@ commands:
     usage: §c/<command>
     permission: admintoggle.listsnapshots
     permission-message: §cYou don't have permission to use that command.
-    aliases: [listsnaps, listsnap, mysnapshots, mysnaps, mysnap]
+    aliases: [listsnaps, mysnapshots, mysnaps]
   allsnapshots:
     description: Lists all snapshots.
     usage: §c/<command>
     permission: admintoggle.allsnapshots
     permission-message: §cYou don't have permission to use that command
-    aliases: [allsnaps, allsnap]
+    aliases: [allsnaps]
   deletesnapshot:
     description: Deletes the specified snapshot.
     usage: §c/<command> <snapshot name>
@@ -47,11 +47,11 @@ commands:
     permission-message: §cYou don't have permission to use that command.
     aliases: [delsnap, dsnap, deletesnap, removesnapshot, removesnap, rmsnap]
   savesnapshots:
-    description: Saves your snapshots.
+    description: Saves all snapshots to file.
     usage: §c/<command>
     permission: admintoggle.savesnapshots
     permission-message: §cYou don't have permission to use that command.
-    aliases: [savesnaps, savesnap]
+    aliases: [savesnaps]
   admincheck:
     description: Returns whether admin mode is currently enabled.
     usage: §c/<command>
@@ -63,7 +63,7 @@ commands:
     usage: §c/<command>
     permission: admintoggle.undosnapshot
     permission-message: §cYou don't have permission to use that command.
-    aliases: [undosnap, undosnaps, usnaps, usnap]
+    aliases: [undosnap, undosnaps, usnap]
   deletemysnapshots:
     description: Deletes all of your snapshots.
     usage: §c/<command> CONFIRM

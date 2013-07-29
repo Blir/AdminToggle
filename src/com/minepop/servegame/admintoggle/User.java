@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class User {
 
     private String name;
-    private final ArrayList<Snapshot> snaps = new ArrayList<>(0), snapLog = new ArrayList<>(0);
+    private final ArrayList<Snapshot> snaps = new ArrayList<Snapshot>(0), snapLog = new ArrayList<Snapshot>(0);
     private Snapshot currentSnap = null;
     private int snapLogIdx = 0;
     private boolean adminMode = false;
@@ -100,7 +100,7 @@ public class User {
      * @return The Snapshots with matching names
      */
     public ArrayList<Snapshot> getSnapshots(String name) {
-        ArrayList<Snapshot> matches = new ArrayList<>(0);
+        ArrayList<Snapshot> matches = new ArrayList<Snapshot>(0);
         for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
                 matches.add(snap);
