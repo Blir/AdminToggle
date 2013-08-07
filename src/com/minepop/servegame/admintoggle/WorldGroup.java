@@ -8,8 +8,8 @@ import java.util.Objects;
 /**
  *
  * @author Blir
- * @version 1.2.2
- * @since 10 June 2013
+ * @version 2.0.0 Beta
+ * @since 30 July 2013
  */
 public class WorldGroup {
 
@@ -79,8 +79,14 @@ public class WorldGroup {
      *
      * @param worlds The names of the worlds to add to this WorldGroup
      */
-    public boolean addWorlds(String[] worlds) {
-        return this.worlds.addAll(Arrays.asList(worlds));
+    public int addWorlds(String[] worlds) {
+        int worldsAdded = 0;
+        for (String world : worlds) {
+            if (this.worlds.add(world)) {
+                worldsAdded++;
+            }
+        }
+        return worldsAdded;
     }
 
     /**

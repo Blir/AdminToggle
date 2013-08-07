@@ -7,50 +7,38 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.minepop.servegame.admintoggle.Snapshot.Visibility;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 
-/**
- * To-do: //////////////////////////////////////////////////////////////////////
- * More admin commands to manage others' snapshots /////////////////////////////
- * Save ItemStack metadata /////////////////////////////////////////////////////
- */
 /**
  *
  * @author Blir
- * @version 1.2.2
- * @since 6 July 2013
+ * @version 2.0.0 Beta
+ * @since 30 July 2013
  */
-public class Admin extends JavaPlugin implements Listener {
+public class Admin extends JavaPlugin {
 
-    private enum Action {
+    protected enum Action {
 
-        ADMINSWITCH, ASDF, ADSWITCH, NEWSNAPSHOT, NEWSNAP, OVERWRITESNAPSHOT,
-        OVERWRITESNAP, OSNAP, LOADSNAPSHOT, LOADSNAP, LSNAP, LOADOTHERSNAPSHOT,
-        LOADOTHERSNAP, LOSNAP, LISTSNAPSHOTS, LISTSNAPS, MYSNAPSHOTS,
-        MYSNAPS, DELETESNAPSHOT, DELETESNAP, DELSNAP, DSNAP,
-        REMOVESNAPSHOT, REMOVESNAP, RMSNAP, SAVESNAPSHOTS, SAVESNAPS, ADMINCHECK,
-        ADCHECK, ADC, UNDOSNAPSHOT, UNDOSNAP, USNAP, DELETEMYSNAPSHOTS,
-        ALLSNAPSHOTS, ALLSNAPS, CREATEWORLDGROUP, ADDTOWORLDGROUP,
-        REMOVEFROMWORLDGROUP, DELETEWORLDGROUP, LISTWORLDGROUPS, MOVESNAPSHOT,
-        MOVESNAP, SNAPSHOTTYPE, SNAPTYPE, ADMINTOGGLE, TEST, VERSION, HELP
+        ADMINSWITCH, NEWSNAPSHOT, OVERWRITESNAPSHOT, LOADSNAPSHOT,
+        LOADOTHERSNAPSHOT, LISTSNAPSHOTS, DELETESNAPSHOT, SAVESNAPSHOTS,
+        ADMINCHECK, UNDOSNAPSHOT, DELETEMYSNAPSHOTS, ALLSNAPSHOTS,
+        CREATEWORLDGROUP, ADDTOWORLDGROUP, REMOVEFROMWORLDGROUP,
+        DELETEWORLDGROUP, LISTWORLDGROUPS, MOVESNAPSHOT, SNAPSHOTTYPE,
+        ADMINTOGGLE, TEST, VERSION, HELP
     }
-    private final ArrayList<User> users = new ArrayList<User>(0);
-    private final ArrayList<WorldGroup> worldGroups = new ArrayList<WorldGroup>(0);
+    protected final ArrayList<User> users = new ArrayList<User>(0);
+    protected final ArrayList<WorldGroup> worldGroups = new ArrayList<WorldGroup>(0);
     private final int README_VERSION = 5;
-    private File snapFile, snapFileBackup, wgFile;
-    private boolean vault, loadBalance, loadHunger, loadGameMode, loadExp, backup,
-            loadedProperly = true, mkd;
+    private boolean vault;
     private Economy econ = null;
 
     /**
@@ -69,36 +57,26 @@ public class Admin extends JavaPlugin implements Listener {
                 vault = false;
             }
         }
-        loadBalance = getConfig().getBoolean("snapshots.savebalance");
-        loadHunger = getConfig().getBoolean("snapshots.savehunger");
-        loadGameMode = getConfig().getBoolean("snapshots.savegamemode");
-        loadExp = getConfig().getBoolean("snapshots.saveexp");
-        backup = getConfig().getBoolean("snapshots.backup");
-        getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onPlayerJoin(PlayerJoinEvent evt) {
+                if (!isUser(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
+                        || evt.getPlayer().hasPermission("admintoggle.basic"))) {
+                    users.add(new User(evt.getPlayer().getName()));
+                    evt.getPlayer().sendMessage("§aWelcome to Admin Toggle. For instructions on "
+                            + "using this plugin you can view the read me file here: "
+                            + "https://github.com/Blir/AdminToggle - I hope you find this "
+                            + "plugin useful! :)");
+                }
+            }
+        }, this);
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdirs();
         }
-        snapFile = new File(getDataFolder().getPath() + "/snapshots.properties");
-        snapFileBackup = new File(getDataFolder().getPath() + "/snapshots_backup - " + java.text.DateFormat.getDateInstance().format(Calendar.getInstance().getTime()) + ".properties");
-        wgFile = new File(getDataFolder().getPath() + "/linkedworlds.properties");
-        mkd = getConfig().getBoolean("worldgroups.makedefault");
         User.setPlugin(this);
+        getDataFolder().mkdirs();
         load();
-        if (!loadedProperly) {
-            getLogger().warning("Since the plugin did not load properly, it will "
-                    + "not save upon disabling. You will need to manually save or correct the error in "
-                    + "the file, if there is one. If this issue persists, contact Blir at "
-                    + "             http://dev.bukkit.org/profiles/Bliry/");
-            for (Player player : getServer().getOnlinePlayers()) {
-                if (player.hasPermission("admintoggle.*")) {
-                    player.sendMessage("§4Since AdminToggle did not load properly, it will not save upon "
-                            + "disabling. You will need to manually save or correct the error "
-                            + "in the file, if there is one. If this issue persists, contact Blir at "
-                            + "http://dev.bukkit.org/profiles/Bliry/");
-                }
-            }
-        }
-        if (!isWorldGroup("Default") && mkd && !isInWorldGroup("world") && !isInWorldGroup("world_nether") && !isInWorldGroup("world_the_end")) {
+        if (!isWorldGroup("Default") && getConfig().getBoolean("worldgroups.makedefault") && !isInWorldGroup("world") && !isInWorldGroup("world_nether") && !isInWorldGroup("world_the_end")) {
             worldGroups.add(new WorldGroup("Default", new String[]{"world", "world_nether", "world_the_end"}));
         }
         if (!getConfig().getString("readme.version").equals(String.valueOf(README_VERSION))) {
@@ -112,20 +90,16 @@ public class Admin extends JavaPlugin implements Listener {
      */
     @Override
     public void onDisable() {
-        if (loadedProperly) {
-            save(false);
-            if (backup) {
-                save(true);
-            }
-        } else {
-            getLogger().warning("Not saving since the plugin didn't load properly.");
+        save(false);
+        if (getConfig().getBoolean("snapshots.backup")) {
+            save(true);
         }
-        getConfig().set("snapshots.savebalance", loadBalance);
-        getConfig().set("snapshots.savehunger", loadHunger);
-        getConfig().set("snapshots.savegamemode", loadGameMode);
-        getConfig().set("snapshots.saveexp", loadExp);
-        getConfig().set("snapshots.backup", backup);
-        getConfig().set("worldgroups.makedefault", mkd);
+        getConfig().set("snapshots.savebalance", getConfig().getBoolean("snapshots.savebalance"));
+        getConfig().set("snapshots.savehunger", getConfig().getBoolean("snapshots.savehunger"));
+        getConfig().set("snapshots.savegamemode", getConfig().getBoolean("snapshots.savegamemode"));
+        getConfig().set("snapshots.saveexp", getConfig().getBoolean("snapshots.saveexp"));
+        getConfig().set("snapshots.backup", getConfig().getBoolean("snapshots.backup"));
+        getConfig().set("worldgroups.makedefault", getConfig().getBoolean("worldgroups.makedefault"));
         saveConfig();
     }
 
@@ -150,8 +124,6 @@ public class Admin extends JavaPlugin implements Listener {
 
         switch (Action.valueOf(cmd.getName().toUpperCase())) {
             case ADMINSWITCH:
-            case ASDF:
-            case ADSWITCH:
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
@@ -177,7 +149,6 @@ public class Admin extends JavaPlugin implements Listener {
                 player.sendMessage("§aAdmin mode §9" + (user.invertAdminMode() ? "enabled" : "disabled") + "§a.");
                 return true;
             case NEWSNAPSHOT:
-            case NEWSNAP:
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
@@ -192,8 +163,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case OVERWRITESNAPSHOT:
-            case OVERWRITESNAP:
-            case OSNAP:
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
@@ -208,8 +177,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case LOADSNAPSHOT:
-            case LOADSNAP:
-            case LSNAP:
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
@@ -224,8 +191,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case LOADOTHERSNAPSHOT:
-            case LOADOTHERSNAP:
-            case LOSNAP:
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
@@ -233,7 +198,7 @@ public class Admin extends JavaPlugin implements Listener {
                     player.sendMessage("§cIncorrect amount of arguments!");
                     return false;
                 }
-                if (isUserRegistered(args[0])) {
+                if (isUser(args[0])) {
                     User target = getUser(args[0]);
                     if (loadSnapshot(user, args[1], player, target)) {
                         player.sendMessage("§9" + args[0] + "§a's snapshot \"§9" + args[1] + "§a\" loaded!");
@@ -249,9 +214,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case LISTSNAPSHOTS:
-            case LISTSNAPS:
-            case MYSNAPSHOTS:
-            case MYSNAPS:
                 if (user != null && player != null) {
                     if (args.length != 0) {
                         player.sendMessage("§cIncorrect amount of arguments!");
@@ -272,7 +234,7 @@ public class Admin extends JavaPlugin implements Listener {
                         sender.sendMessage("§c/listsnapshots <user name>");
                         return true;
                     }
-                    if (isUserRegistered(args[0])) {
+                    if (isUser(args[0])) {
                         user = getUser(args[0]);
                         if (!user.getSnapshots().isEmpty()) {
                             sender.sendMessage("§9" + args[0] + "§a's snapshots:");
@@ -292,12 +254,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case DELETESNAPSHOT:
-            case DELETESNAP:
-            case DELSNAP:
-            case DSNAP:
-            case REMOVESNAPSHOT:
-            case REMOVESNAP:
-            case RMSNAP:
                 if (user != null && player != null) {
                     if (args.length != 1) {
                         player.sendMessage("§cIncorrect amount of arguments!");
@@ -315,7 +271,7 @@ public class Admin extends JavaPlugin implements Listener {
                         sender.sendMessage("§c/deletesnapshot <snapshot name> <user name> <world>");
                         return true;
                     }
-                    if (isUserRegistered(args[1])) {
+                    if (isUser(args[1])) {
                         user = getUser(args[1]);
                         if (getServer().getWorld(args[2]) != null && user.removeSnapshot(args[0], args[2])) {
                             sender.sendMessage("§9" + args[1] + "§a's snapshot \"§9" + args[0] + "§a\" has been deleted from the world \"§9" + args[2] + "§a.\"");
@@ -332,7 +288,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case SAVESNAPSHOTS:
-            case SAVESNAPS:
                 if (args.length != 0) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -341,8 +296,6 @@ public class Admin extends JavaPlugin implements Listener {
                 sender.sendMessage("§aSave complete.");
                 return true;
             case ADMINCHECK:
-            case ADCHECK:
-            case ADC:
                 if (user != null && player != null) {
                     if (args.length != 0) {
                         player.sendMessage("§cIncorrect amount of arguments!");
@@ -356,7 +309,7 @@ public class Admin extends JavaPlugin implements Listener {
                         sender.sendMessage("§c/admincheck <user name>");
                         return true;
                     }
-                    if (isUserRegistered(args[0])) {
+                    if (isUser(args[0])) {
                         sender.sendMessage("§aAdmin mode is §9" + (getUser(args[0]).isAdmin() ? "enabled" : "disabled") + "§a for \"§9" + args[0] + "§a.\"");
                     } else {
                         if (getServer().getPlayer(args[0]) == null) {
@@ -368,8 +321,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case UNDOSNAPSHOT:
-            case UNDOSNAP:
-            case USNAP:
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
@@ -387,15 +338,19 @@ public class Admin extends JavaPlugin implements Listener {
                 if (user == null || player == null) {
                     sender.sendMessage("§cYou must be a player to use this command!");
                     return true;
-                } else if (args.length != 1 || !args[0].equals("CONFIRM")) {
+                }
+                if (args.length != 1) {
                     player.sendMessage("§cIncorrect amount of arguments!");
                     return false;
+                }
+                if (!args[0].equals("CONFIRM")) {
+                    player.sendMessage("§cYou must enter \"§9/deletemysnapshots CONFIRM§f\" to delete your snapshots.");
+                    return true;
                 }
                 user.clearSnapshots();
                 player.sendMessage("§aSnapshots deleted.");
                 return true;
             case ALLSNAPSHOTS:
-            case ALLSNAPS:
                 if (args.length != 0) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -413,7 +368,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case CREATEWORLDGROUP:
-                //case CWG:
                 if (args.length < 1) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -449,7 +403,6 @@ public class Admin extends JavaPlugin implements Listener {
                 sender.sendMessage("§aThe world group \"§9" + args[0] + "§a\" has been created.");
                 return true;
             case ADDTOWORLDGROUP:
-                //case AWG:
                 if (args.length < 2) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -481,9 +434,6 @@ public class Admin extends JavaPlugin implements Listener {
                 sender.sendMessage("§9" + wg.addWorlds(worlds) + "§a world(s) have been added to the world group \"§9" + args[0] + "§a.\"");
                 return true;
             case REMOVEFROMWORLDGROUP:
-                //case RFWG:
-                //case DELETEFROMWORLDGROUP:
-                //case DFWG:
                 if (args.length < 2) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -505,7 +455,6 @@ public class Admin extends JavaPlugin implements Listener {
                         + "§a world(s) have been removed from the world group \"§9" + args[0] + "§a.\"");
                 return true;
             case DELETEWORLDGROUP:
-                //case DWG:
                 if (args.length != 1) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -520,7 +469,6 @@ public class Admin extends JavaPlugin implements Listener {
                 sender.sendMessage("§aThe world group \"§9" + args[0] + "§a\" has been deleted.");
                 return true;
             case LISTWORLDGROUPS:
-                //case LWG:
                 if (args.length != 0) {
                     sender.sendMessage("§cIncorrect amount of arguments!");
                     return false;
@@ -533,7 +481,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case MOVESNAPSHOT:
-            case MOVESNAP:
                 if (user != null && player != null) {
                     if (args.length != 2) {
                         player.sendMessage("§cIncorrect amount of arguments!");
@@ -560,7 +507,7 @@ public class Admin extends JavaPlugin implements Listener {
                         sender.sendMessage("§c/movesnapshot <snapshot name> <destination world> <user name> <world of snapshot>");
                         return true;
                     }
-                    if (!isUserRegistered(args[2])) {
+                    if (!isUser(args[2])) {
                         sender.sendMessage("§cThe user \"§9" + args[2] + "§c\" does not exist!");
                         return true;
                     }
@@ -581,7 +528,6 @@ public class Admin extends JavaPlugin implements Listener {
                 }
                 return true;
             case SNAPSHOTTYPE:
-            case SNAPTYPE:
                 if (user != null && player != null) {
                     if (args.length != 2) {
                         player.sendMessage("§cIncorrect amount of arguments!");
@@ -697,7 +643,7 @@ public class Admin extends JavaPlugin implements Listener {
      * @param name The name of the Player to check if they're registered
      * @return true if the Player is registered
      */
-    public boolean isUserRegistered(String name) {
+    public boolean isUser(String name) {
         for (User user : users) {
             if (user.getName().equals(name)) {
                 return true;
@@ -835,23 +781,7 @@ public class Admin extends JavaPlugin implements Listener {
             return false;
         }
         user.logSnapshot(snap);
-        player.getInventory().setContents(cloneItemStack(snap.getInv()));
-        player.getInventory().setArmorContents(cloneItemStack(snap.getArmor()));
-        if (loadGameMode) {
-            player.setGameMode(snap.getGameMode());
-        }
-        if (loadExp) {
-            player.setExp(snap.getExp());
-            player.setLevel(snap.getLevel());
-        }
-        if (loadHunger) {
-            player.setExhaustion(snap.getExhaustion());
-            player.setFoodLevel(snap.getFoodLevel());
-            player.setSaturation(snap.getSaturation());
-        }
-        if (loadBalance) {
-            setBalance(player.getName(), snap.getBalance());
-        }
+        loadSnapshot(player, snap);
         return true;
     }
 
@@ -867,24 +797,28 @@ public class Admin extends JavaPlugin implements Listener {
         if (snap == null) {
             return false;
         }
+        loadSnapshot(player, snap);
+        return true;
+    }
+
+    public void loadSnapshot(Player player, Snapshot snap) {
         player.getInventory().setContents(cloneItemStack(snap.getInv()));
         player.getInventory().setArmorContents(cloneItemStack(snap.getArmor()));
-        if (loadGameMode) {
+        if (getConfig().getBoolean("snapshots.savegamemode")) {
             player.setGameMode(snap.getGameMode());
         }
-        if (loadExp) {
+        if (getConfig().getBoolean("snapshots.saveexp")) {
             player.setExp(snap.getExp());
             player.setLevel(snap.getLevel());
         }
-        if (loadHunger) {
+        if (getConfig().getBoolean("snapshots.savehunger")) {
             player.setExhaustion(snap.getExhaustion());
             player.setFoodLevel(snap.getFoodLevel());
             player.setSaturation(snap.getSaturation());
         }
-        if (loadBalance) {
+        if (getConfig().getBoolean("snapshots.savebalance")) {
             setBalance(player.getName(), snap.getBalance());
         }
-        return true;
     }
 
     private void setBalance(String name, double amount) {
@@ -895,7 +829,7 @@ public class Admin extends JavaPlugin implements Listener {
         econ.depositPlayer(name, amount);
     }
 
-    private static ItemStack[] cloneItemStack(ItemStack[] stack) {
+    protected static ItemStack[] cloneItemStack(ItemStack[] stack) {
         ItemStack[] inventory = new ItemStack[stack.length];
         for (int idx = 0; idx < stack.length; idx++) {
             if (stack[idx] != null) {
@@ -905,7 +839,7 @@ public class Admin extends JavaPlugin implements Listener {
         return inventory;
     }
 
-    private boolean isConflict(Snapshot prospective) {
+    protected boolean isConflict(Snapshot prospective) {
         WorldGroup wg = getWorldGroupByWorld(prospective.getWorld());
         User user = getUser(prospective.getUser());
         for (String world : wg.getWorlds()) {
@@ -917,10 +851,7 @@ public class Admin extends JavaPlugin implements Listener {
         return false;
     }
 
-    private boolean isConflict(WorldGroup wg, String[] worlds) {
-        if (wg.isEmpty()) {
-            return false;
-        }
+    protected boolean isConflict(WorldGroup wg, String[] worlds) {
         boolean conflict = false;
         for (int idx = 0; idx < worlds.length; idx++) {
             for (String world : worlds) {
@@ -938,7 +869,7 @@ public class Admin extends JavaPlugin implements Listener {
         return conflict;
     }
 
-    private void ungroupWorlds(List<String> worlds) {
+    protected void ungroupWorlds(List<String> worlds) {
         for (String world : worlds) {
             for (User user : users) {
                 for (Snapshot snap : user.getSnapshots()) {
@@ -951,493 +882,85 @@ public class Admin extends JavaPlugin implements Listener {
     }
 
     private void save(boolean backup) {
-        FileOutputStream fos = null;
+        YamlConfiguration out = new YamlConfiguration();
         try {
-            fos = new FileOutputStream(backup ? snapFileBackup : snapFile);
-            Properties p = new Properties();
-            p.setProperty("User Count", String.valueOf(users.size()));
+            out.set("user.count", users.size());
             for (int idx = 0; idx < users.size(); idx++) {
                 User user = users.get(idx);
-                p.setProperty("User/" + idx, user.getName());
-                p.setProperty("Admin/" + idx, String.valueOf(user.isAdmin()));
-                p.setProperty("Current Snapshot/" + idx, user.getCurrentSnapshot() != null ? user.getCurrentSnapshot().getName() : "null");
-                p.setProperty("Current Snapshot World/" + idx, user.getCurrentSnapshot() != null ? user.getCurrentSnapshot().getWorld() : "null");
-                p.setProperty(user.getName() + "/Snapshot Count", String.valueOf(user.getSnapshots().size()));
+                out.set("user." + idx + ".name", user.getName());
+                out.set("user." + idx + ".adminmode", user.isAdmin());
+                out.set("user." + idx + ".snapshot.count", user.getSnapshots().size());
                 for (int idx2 = 0; idx2 < user.getSnapshots().size(); idx2++) {
                     Snapshot snap = user.getSnapshots().get(idx2);
-                    p.setProperty(user.getName() + "/Snapshot/" + idx2, snap.getName());
-                    for (int idx3 = 0; idx3 < 36; idx3++) {
-                        ItemStack inv = snap.getInv()[idx3];
-                        if (inv != null) {
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/IType/"
-                                    + idx3, String.valueOf(inv.getTypeId()));
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/IAmount/"
-                                    + idx3, String.valueOf(inv.getAmount()));
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/IDamage/"
-                                    + idx3, String.valueOf(inv.getDurability()));
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/IEnchant/"
-                                    + idx3, String.valueOf(inv.getEnchantments().size()));
-                            int idx4 = 0;
-                            for (Iterator<Enchantment> it = inv.getEnchantments().keySet().iterator(); it.hasNext();) {
-                                Enchantment ench = it.next();
-                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
-                                        + "/IEnchantment/" + idx4, String.valueOf(ench.getName()));
-                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
-                                        + "/IEnchantLevel/" + idx4, String.valueOf(inv.getEnchantmentLevel(ench)));
-                                idx4++;
-                            }
-                            if (inv.hasItemMeta()) {
-                                ItemMeta meta = inv.getItemMeta();
-                                if (meta instanceof BookMeta) {
-                                    p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3 + "/MetaType", "Book");
-                                    String data = "";
-                                    for (int idx5 = 0; idx5 < meta.getLore().toArray().length; idx5++) {
-                                        data += meta.getLore().toArray()[idx5];
-                                    }
-                                    p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3 + "/MetaData", data);
-                                } else if (meta instanceof MapMeta) {
-                                    p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3 + "/MetaType", "Map");
-                                }
-                            }
-                        } else {
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/IType/" + idx3, "null");
-                        }
-                    }
-                    for (int idx3 = 0; idx3 < 4; idx3++) {
-                        ItemStack armor = snap.getArmor()[idx3];
-                        if (armor != null) {
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/AType/" + idx3,
-                                    String.valueOf(armor.getTypeId()));
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/AAmount/" + idx3,
-                                    String.valueOf(armor.getAmount()));
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/ADamage/" + idx3,
-                                    String.valueOf(armor.getDurability()));
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/AEnchant/" + idx3,
-                                    String.valueOf(armor.getEnchantments().size()));
-                            int idx4 = 0;
-                            for (Iterator<Enchantment> it = armor.getEnchantments().keySet().iterator(); it.hasNext();) {
-                                Enchantment ench = it.next();
-                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
-                                        + "/AEnchantment/" + idx4, String.valueOf(ench.getName()));
-                                p.setProperty(user.getName() + "/" + snap.getName() + "/" + idx3
-                                        + "/AEnchantLevel/" + idx4, String.valueOf(armor.getEnchantmentLevel(ench)));
-                                idx4++;
-                            }
-                        } else {
-                            p.setProperty(user.getName() + "/" + snap.getName() + "/AType/" + idx3, "null");
-                        }
-                    }
-                    p.setProperty(user.getName() + "/GameMode/" + snap.getName(), String.valueOf(snap.getGameMode()));
-                    p.setProperty(user.getName() + "/Exp/" + snap.getName(), String.valueOf(snap.getExp()));
-                    p.setProperty(user.getName() + "/Level/" + snap.getName(), String.valueOf(snap.getLevel()));
-                    p.setProperty(user.getName() + "/Exhaustion/" + snap.getName(), String.valueOf(snap.getExhaustion()));
-                    p.setProperty(user.getName() + "/Food Level/" + snap.getName(), String.valueOf(snap.getFoodLevel()));
-                    p.setProperty(user.getName() + "/Saturation/" + snap.getName(), String.valueOf(snap.getSaturation()));
-                    p.setProperty(user.getName() + "/Balance/" + snap.getName(), String.valueOf(snap.getBalance()));
-                    p.setProperty(user.getName() + "/World/" + snap.getName(), snap.getWorld());
-                    p.setProperty(user.getName() + "/Visibility/" + snap.getName(), String.valueOf(snap.getVisibility()));
+                    out.set("user." + idx + ".snapshot." + idx2 + ".name", snap.getName());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".inv", snap.getInv());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".armor", snap.getArmor());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".exp", snap.getExp());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".level", snap.getLevel());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".gamemode", String.valueOf(snap.getGameMode()));
+                    out.set("user." + idx + ".snapshot." + idx2 + ".exhaustion", snap.getExhaustion());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".foodlevel", snap.getFoodLevel());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".saturation", snap.getSaturation());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".balance", snap.getBalance());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".world", snap.getWorld());
+                    out.set("user." + idx + ".snapshot." + idx2 + ".visibility", String.valueOf(snap.getVisibility()));
                 }
             }
-            p.store(fos, null);
-            fos.close();
-            fos = new FileOutputStream(wgFile);
-            p = new Properties();
-            p.setProperty("World Group Count", String.valueOf(worldGroups.size()));
+            out.set("worldgroup.count", worldGroups.size());
             for (int idx = 0; idx < worldGroups.size(); idx++) {
-                p.setProperty(String.valueOf(idx), worldGroups.get(idx).getName());
-                p.setProperty(worldGroups.get(idx).getName() + "/WorldCount", String.valueOf(worldGroups.get(idx).getWorlds().size()));
-                for (int idx2 = 0; idx2 < worldGroups.get(idx).getWorlds().size(); idx2++) {
-                    p.setProperty(worldGroups.get(idx).getName() + "/" + idx2, worldGroups.get(idx).getWorlds().get(idx2));
+                WorldGroup wg = worldGroups.get(idx);
+                out.set("worldgroup." + idx + ".name", wg.getName());
+                out.set("worldgroup." + idx + ".worldcount", wg.getWorlds().size());
+                for (int idx2 = 0; idx2 < wg.getWorlds().size(); idx2++) {
+                    out.set("worldgroup." + idx + ".world." + idx2, wg.getWorlds().get(idx2));
                 }
             }
-            p.store(fos, null);
+            out.save(new File(getDataFolder(), "data" + (backup ? " - " + java.text.DateFormat.getDateInstance().format(Calendar.getInstance().getTime()) : "") + ".yml"));
         } catch (IOException ex) {
-            getLogger().log(Level.WARNING, "Error saving data: {0}", ex.toString());
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException ex) {
-                    getLogger().warning("Error closing output stream!");
-                }
-            }
+            getLogger().log(Level.WARNING, "Error loading data.", ex);
         }
     }
 
     private void load() {
-        if (!snapFile.exists() || !wgFile.exists()) {
-            save(false);
-            return;
-        }
-        FileInputStream fis = null;
+        YamlConfiguration in = new YamlConfiguration();
         try {
-            fis = new FileInputStream(snapFile);
-            Properties p = new Properties();
-            p.load(fis);
-            int userCount = 0;
-            try {
-                userCount = Integer.parseInt(p.getProperty("User Count"));
-            } catch (NumberFormatException ex) {
-                getLogger().log(Level.WARNING, "Error loading user count");
-                loadedProperly = false;
-            } catch (NullPointerException ex) {
-                getLogger().log(Level.WARNING, "Error loading user count");
-                loadedProperly = false;
-            }
+            in.load(new File(getDataFolder(), "data.yml"));
+            int userCount = in.getInt("user.count");
             for (int idx = 0; idx < userCount; idx++) {
-                String userName = p.getProperty("User/" + idx);
-                if (userName == null) {
-                    getLogger().log(Level.WARNING, "Error loading user {0}",
-                            idx);
-                    loadedProperly = false;
-                    continue;
-                }
-                User user = new User(userName);
-                users.add(user);
-                try {
-                    user.setAdminMode(Boolean.parseBoolean(p.getProperty("Admin/" + idx)));
-                } catch (NumberFormatException ex) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s admin mode setting, set to false",
-                            user.getName());
-                } catch (NullPointerException ex) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s admin mode setting, set to false",
-                            user.getName());
-                }
-                int snapCount;
-                try {
-                    snapCount = Integer.parseInt(p.getProperty(user.getName() + "/Snapshot Count"));
-                } catch (NumberFormatException ex) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot Count",
-                            user.getName());
-                    loadedProperly = false;
-                    continue;
-                } catch (NullPointerException ex) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot Count",
-                            user.getName());
-                    loadedProperly = false;
-                    continue;
-
-                }
+                User user = new User(in.getString("user." + idx + ".name"));
+                user.setAdminMode(in.getBoolean("user." + idx + ".adminmode"));
+                int snapCount = in.getInt("user." + idx + ".snapshot.count");
                 for (int idx2 = 0; idx2 < snapCount; idx2++) {
-                    ItemStack[] inv = new ItemStack[36];
-                    String name = p.getProperty(user.getName() + "/Snapshot/" + idx2);
-                    if (name == null) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot at {1}",
-                                new Object[]{user.getName(), idx2});
-                        loadedProperly = false;
-                        continue;
-                    }
-                    for (int idx3 = 0; idx3 < 36; idx3++) {
-                        String iType = p.getProperty(user.getName() + "/" + name + "/IType/" + idx3);
-                        if (iType == null) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Inv at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        }
-                        if (iType.equals("null")) {
-                            continue;
-                        }
-                        try {
-                            inv[idx3] = new ItemStack(
-                                    Integer.parseInt(iType),
-                                    Integer.parseInt(p.getProperty(user.getName() + "/" + name + "/IAmount/" + idx3)),
-                                    Short.parseShort(p.getProperty(user.getName() + "/" + name + "/IDamage/" + idx3)));
-                        } catch (NumberFormatException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Inv at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        } catch (NullPointerException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Inv at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        }
-                        int enchantCount;
-                        try {
-                            enchantCount = Integer.parseInt(p.getProperty(user.getName() + "/" + name + "/IEnchant/" + idx3));
-                        } catch (NumberFormatException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: CEInv at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        } catch (NullPointerException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: CEInv at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        }
-                        for (int idx4 = 0; idx4 < enchantCount; idx4++) {
-                            try {
-                                inv[idx3].addEnchantment(Enchantment.getByName(
-                                        p.getProperty(user.getName() + "/" + name + "/" + idx3 + "/IEnchantment/" + idx4)),
-                                        Integer.parseInt(p.getProperty(user.getName() + "/"
-                                        + name + "/" + idx3 + "/IEnchantLevel/" + idx4)));
-                            } catch (IllegalArgumentException ex) {
-                                getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: EInv at {2}",
-                                        new Object[]{user.getName(), name, idx4});
-                                loadedProperly = false;
-                                continue;
-                            } catch (NullPointerException ex) {
-                                getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: EInv at {2}",
-                                        new Object[]{user.getName(), name, idx4});
-                                loadedProperly = false;
-                                continue;
-                            }
-                        }
-                    }
-                    ItemStack[] armor = new ItemStack[4];
-                    for (int idx3 = 0; idx3 < 4; idx3++) {
-                        String aType = p.getProperty(user.getName() + "/" + name + "/AType/" + idx3);
-                        if (aType == null) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Armor at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        }
-                        if (aType.equals("null")) {
-                            continue;
-                        }
-                        try {
-                            armor[idx3] = new ItemStack(
-                                    Integer.parseInt(aType),
-                                    Integer.parseInt(p.getProperty(user.getName() + "/" + name + "/AAmount/" + idx3)),
-                                    Short.parseShort(p.getProperty(user.getName() + "/" + name + "/ADamage/" + idx3)));
-                        } catch (NumberFormatException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Armor at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        } catch (NullPointerException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Armor at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        }
-                        int enchantCount;
-                        try {
-                            enchantCount = Integer.parseInt(p.getProperty(user.getName() + "/" + name + "/AEnchant/" + idx3));
-                        } catch (NumberFormatException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: CEArmor at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        } catch (NullPointerException ex) {
-                            getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: CEArmor at {2}",
-                                    new Object[]{user.getName(), name, idx3});
-                            loadedProperly = false;
-                            continue;
-                        }
-                        for (int idx4 = 0; idx4 < enchantCount; idx4++) {
-                            try {
-                                armor[idx3].addEnchantment(Enchantment.getByName(
-                                        p.getProperty(user.getName() + "/" + name + "/" + idx3 + "/AEnchantment/" + idx4)),
-                                        Integer.parseInt(p.getProperty(user.getName() + "/"
-                                        + name + "/" + idx3 + "/AEnchantLevel/" + idx4)));
-                            } catch (IllegalArgumentException ex) {
-                                getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: EArmor at {2}",
-                                        new Object[]{user.getName(), name, idx3});
-                                loadedProperly = false;
-                                continue;
-                            } catch (NullPointerException ex) {
-                                getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: EArmor at {2}",
-                                        new Object[]{user.getName(), name, idx3});
-                                loadedProperly = false;
-                                continue;
-                            }
-                        }
-                    }
-                    GameMode gm;
-                    try {
-                        gm = GameMode.valueOf(p.getProperty(user.getName() + "/GameMode/" + name).toUpperCase());
-                    } catch (IllegalArgumentException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
-                                new Object[]{user.getName(), name});
-                        gm = GameMode.SURVIVAL;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
-                                new Object[]{user.getName(), name});
-                        gm = GameMode.SURVIVAL;
-                    }
-                    if (gm == null) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: GameMode, set to survival",
-                                new Object[]{user.getName(), name});
-                        gm = GameMode.SURVIVAL;
-                    }
-                    double balance;
-                    try {
-                        balance = Double.parseDouble(p.getProperty(user.getName() + "/Balance/" + name));
-                    } catch (NumberFormatException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Balance, set to 0.0",
-                                new Object[]{user.getName(), name});
-                        balance = 0.0;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Balance, set to 0.0",
-                                new Object[]{user.getName(), name});
-                        balance = 0.0;
-                    }
-                    float exp;
-                    try {
-                        exp = Float.parseFloat(p.getProperty(user.getName() + "/Exp/" + name));
-                    } catch (NumberFormatException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Exp, set to 0",
-                                new Object[]{user.getName(), name});
-                        exp = 0;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Exp, set to 0",
-                                new Object[]{user.getName(), name});
-                        exp = 0;
-                    }
-                    int level;
-                    try {
-                        level = Integer.parseInt(p.getProperty(user.getName() + "/Level/" + name));
-                    } catch (NumberFormatException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Level, set to 0",
-                                new Object[]{user.getName(), name});
-                        level = 0;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Level, set to 0",
-                                new Object[]{user.getName(), name});
-                        level = 0;
-                    }
-                    float exhaust;
-                    try {
-                        exhaust = Float.parseFloat(p.getProperty(user.getName() + "/Exhaustion/" + name));
-                    } catch (NumberFormatException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Exhaustion, set to 2.5",
-                                new Object[]{user.getName(), name});
-                        exhaust = (float) 2.5;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Exhaustion, set to 2.5",
-                                new Object[]{user.getName(), name});
-                        exhaust = (float) 2.5;
-                    }
-                    int foodLevel;
-                    try {
-                        foodLevel = Integer.parseInt(p.getProperty(user.getName() + "/Food Level/" + name));
-                    } catch (NumberFormatException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Food Level, set to 20",
-                                new Object[]{user.getName(), name});
-                        foodLevel = 20;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Food Level, set to 20",
-                                new Object[]{user.getName(), name});
-                        foodLevel = 20;
-                    }
-                    float sat;
-                    try {
-                        sat = Float.parseFloat(p.getProperty(user.getName() + "/Saturation/" + name));
-                    } catch (NumberFormatException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Saturation, set to 0",
-                                new Object[]{user.getName(), name});
-                        sat = 0;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Saturation, set to 0",
-                                new Object[]{user.getName(), name});
-                        sat = 0;
-                    }
-                    String world = p.getProperty(user.getName() + "/World/" + name);
-                    if (world == null) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: World, set to \"world\"",
-                                new Object[]{user.getName(), name});
-                        world = "world";
-                    }
-                    Visibility type;
-                    try {
-                        type = Visibility.valueOf(p.getProperty(user.getName() + "/Visibility/" + name).toUpperCase());
-                    } catch (IllegalArgumentException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to private",
-                                new Object[]{user.getName(), name});
-                        type = Visibility.PRIVATE;
-                    } catch (NullPointerException ex) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to private",
-                                new Object[]{user.getName(), name});
-                        type = Visibility.PRIVATE;
-                    }
-                    if (type == null) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: Visibility, set to private",
-                                new Object[]{user.getName(), name});
-                        type = Visibility.PRIVATE;
-                    }
-                    try {
-                        Snapshot snap = new Snapshot(
-                                user.getName(), name, inv, armor, exp, level, gm, exhaust, foodLevel, sat, balance, world, type);
-                        user.addSnapshot(snap);
-                    } catch (NullPointerException e) {
-                        getLogger().log(Level.WARNING, "Error loading {0}''s Snapshot {1}: ELEFS",
-                                new Object[]{user.getName(), name});
-                        loadedProperly = false;
-                    }
+                    user.addSnapshot(new Snapshot(user.getName(),
+                            in.getString("user." + idx + ".snapshot." + idx2 + ".name"),
+                            ((ArrayList<ItemStack>) in.get("user." + idx + ".snapshot." + idx2 + ".inv")).toArray(new ItemStack[36]),
+                            ((ArrayList<ItemStack>) in.get("user." + idx + ".snapshot." + idx2 + ".armor")).toArray(new ItemStack[4]),
+                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".exp"),
+                            in.getInt("user." + idx + ".snapshot." + idx2 + ".level"),
+                            GameMode.valueOf(in.getString("user." + idx + ".snapshot." + idx2 + ".gamemode")),
+                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".exhaustion"),
+                            in.getInt("user." + idx + ".snapshot." + idx2 + ".foodlevel"),
+                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".saturation"),
+                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".balance"),
+                            in.getString("user." + idx + ".snapshot." + idx2 + ".world"),
+                            Visibility.valueOf(in.getString("user." + idx + ".snapshot." + idx2 + ".visibility"))));
                 }
-                try {
-                    Snapshot snap = user.getSnapshot(p.getProperty("Current Snapshot/" + idx), p.getProperty("Current Snapshot World/" + idx));
-                    if (snap != null) {
-                        user.logSnapshot(snap);
-                    }
-                } catch (NullPointerException e) {
-                    getLogger().log(Level.WARNING, "Error loading {0}''s current Snapshot",
-                            user.getName());
-                }
+                users.add(user);
             }
-            fis.close();
-            fis = new FileInputStream(wgFile);
-            p = new Properties();
-            p.load(fis);
-            int worldGroupCount = 0;
-            try {
-                worldGroupCount = Integer.parseInt(p.getProperty("World Group Count"));
-            } catch (NumberFormatException ex) {
-                getLogger().log(Level.WARNING, "Error loading world groups: World Group Count");
-            } catch (NullPointerException ex) {
-                getLogger().log(Level.WARNING, "Error loading world groups: World Group Count");
-            }
+            int worldGroupCount = in.getInt("worldgroup.count");
             for (int idx = 0; idx < worldGroupCount; idx++) {
-                WorldGroup worldGroup = new WorldGroup(p.getProperty(String.valueOf(idx)));
-                worldGroups.add(worldGroup);
-                int worldCount;
-                try {
-                    worldCount = Integer.parseInt(p.getProperty(worldGroup.getName() + "/WorldCount"));
-                } catch (NumberFormatException ex) {
-                    getLogger().log(Level.WARNING, "Error loading world group {0}: World Count",
-                            worldGroup.getName());
-                    continue;
-                } catch (NullPointerException ex) {
-                    getLogger().log(Level.WARNING, "Error loading world group {0}: World Count",
-                            worldGroup.getName());
-                    continue;
+                String[] worlds = new String[in.getInt("worldgroup." + idx + ".worldcount")];
+                for (int idx2 = 0; idx2 < worlds.length; idx2++) {
+                    worlds[idx2] = in.getString("worldgroup." + idx + ".world." + idx2);
                 }
-                for (int idx2 = 0; idx2 < worldCount; idx2++) {
-                    try {
-                        worldGroup.addWorld(p.getProperty(worldGroup.getName() + "/" + idx2));
-                    } catch (NullPointerException e) {
-                        getLogger().log(Level.WARNING, "Error loading world group {0}: world at {1}",
-                                new Object[]{worldGroup.getName(), idx2});
-                    }
-                }
+                worldGroups.add(new WorldGroup(in.getString("worldgroup." + idx + ".name"), worlds));
             }
+        } catch (FileNotFoundException ex) {
+            getLogger().warning("data.yml file missing.");
         } catch (IOException ex) {
-            getLogger().log(Level.WARNING, "Error loading data: {0}", ex.toString());
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException ex) {
-                    getLogger().warning("Error closing input stream!");
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent evt) {
-        if (!isUserRegistered(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
-                || evt.getPlayer().hasPermission("admintoggle.basic"))) {
-            users.add(new User(evt.getPlayer().getName()));
-            evt.getPlayer().sendMessage("§aWelcome to Admin Toggle. For instructions on "
-                    + "using this plugin you can view the read me file here: "
-                    + "https://github.com/Blir/AdminToggle - I hope you find this "
-                    + "plugin useful! :)");
+            getLogger().log(Level.WARNING, "Error loading data.", ex);
+        } catch (InvalidConfigurationException ex) {
+            getLogger().log(Level.WARNING, "Error loading data.", ex);
         }
     }
 }

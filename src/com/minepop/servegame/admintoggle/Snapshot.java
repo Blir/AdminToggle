@@ -6,8 +6,8 @@ import org.bukkit.inventory.ItemStack;
 /**
  *
  * @author Blir
- * @version 1.2.2
- * @since 7 June 2013
+ * @version 2.0.0 Beta
+ * @since 30 July 2013
  */
 public class Snapshot {
 
@@ -17,11 +17,11 @@ public class Snapshot {
     }
     private String user, name, world;
     private ItemStack[] inv, armor;
-    private float exp, ex, sat;
+    private float exp, exhaust, sat;
     private int level, food;
     private GameMode gm;
     private double balance = 0.0;
-    private Visibility type = Visibility.GLOBAL;
+    private Visibility type = Visibility.PRIVATE;
 
     /**
      * Creates a new Snapshot belonging to the given user and with the given
@@ -58,7 +58,7 @@ public class Snapshot {
         this.exp = exp;
         this.level = level;
         this.gm = gm;
-        this.ex = ex;
+        this.exhaust = ex;
         this.food = food;
         this.sat = sat;
         this.balance = balance;
@@ -135,7 +135,7 @@ public class Snapshot {
      * @return The exhaustion of the Snapshot
      */
     public float getExhaustion() {
-        return ex;
+        return exhaust;
     }
 
     /**
@@ -190,18 +190,8 @@ public class Snapshot {
      * @param armor The armor to be set to
      */
     public void setInv(ItemStack[] inv, ItemStack[] armor) {
-        this.inv = new ItemStack[36];
-        for (int idx = 0; idx < 36; idx++) {
-            if (inv[idx] != null) {
-                this.inv[idx] = inv[idx].clone();
-            }
-        }
-        this.armor = new ItemStack[4];
-        for (int idx = 0; idx < 4; idx++) {
-            if (armor[idx] != null) {
-                this.armor[idx] = armor[idx].clone();
-            }
-        }
+        this.inv = Admin.cloneItemStack(inv);
+        this.armor = Admin.cloneItemStack(armor);
     }
 
     /**
@@ -237,7 +227,7 @@ public class Snapshot {
      * @param ex The exhaustion the Snapshot will be set to
      */
     public void setExhaustion(float ex) {
-        this.ex = ex;
+        this.exhaust = ex;
     }
 
     /**
@@ -302,19 +292,6 @@ public class Snapshot {
      */
     @Override
     public Snapshot clone() {
-        ItemStack[][] inventories = new ItemStack[2][];
-        inventories[0] = new ItemStack[36];
-        inventories[1] = new ItemStack[4];
-        for (int idx = 0; idx < 36; idx++) {
-            if (inv[idx] != null) {
-                inventories[0][idx] = inv[idx].clone();
-            }
-        }
-        for (int idx = 0; idx < 4; idx++) {
-            if (armor[idx] != null) {
-                inventories[1][idx] = armor[idx].clone();
-            }
-        }
-        return new Snapshot(user, name, inventories[0], inventories[1], exp, level, gm, ex, food, sat, balance, world, type);
+        return new Snapshot(user, name, Admin.cloneItemStack(inv), Admin.cloneItemStack(armor), exp, level, gm, exhaust, food, sat, balance, world, type);
     }
 }

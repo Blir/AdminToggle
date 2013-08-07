@@ -1,12 +1,13 @@
 package com.minepop.servegame.admintoggle;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author Blir
- * @version 1.2.2
- * @since 8 June 2012
+ * @version 2.0.0 Beta
+ * @since 30 July 2012
  */
 public class User {
 
@@ -52,8 +53,8 @@ public class User {
      *
      * @param snap The Snapshot to be added
      */
-    public void addSnapshot(Snapshot snap) {
-        snaps.add(snap);
+    public boolean addSnapshot(Snapshot snap) {
+        return snaps.add(snap);
     }
 
     /**
@@ -61,7 +62,7 @@ public class User {
      *
      * @return The Snapshots
      */
-    public ArrayList<Snapshot> getSnapshots() {
+    public List<Snapshot> getSnapshots() {
         return snaps;
     }
 
@@ -99,8 +100,8 @@ public class User {
      * @param name The name of the Snapshot to search for
      * @return The Snapshots with matching names
      */
-    public ArrayList<Snapshot> getSnapshots(String name) {
-        ArrayList<Snapshot> matches = new ArrayList<Snapshot>(0);
+    public List<Snapshot> getSnapshots(String name) {
+        List<Snapshot> matches = new ArrayList<Snapshot>(0);
         for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
                 matches.add(snap);
