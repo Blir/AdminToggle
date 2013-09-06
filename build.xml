@@ -1,0 +1,19 @@
+<project name="AdminToggle" basedir=".">
+   <target name="init">
+      <property name="sourceDir" value="src/com/minepop/servegame/admintoggle" />
+      <property name="outputDir" value="src/com/minepop/servegame/admintoggle" />
+   </target>
+   <target name="clean" depends="init">
+      <deltree dir="${outputDir}" />
+   </target>
+   <target name="prepare" depends="clean">
+      <mkdir dir="${outputDir}" />
+   </target>
+   <target name="compile" depends="prepare">
+     <javac srcdir="${sourceDir}"
+            destdir="${outputDir}"
+            debug="on" >
+       <include name="dist/lib/*.java"/>
+     </javac>
+   </target>
+</project>
