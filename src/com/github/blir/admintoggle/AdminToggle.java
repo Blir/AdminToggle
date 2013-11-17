@@ -1,12 +1,17 @@
-package com.minepop.servegame.admintoggle;
+package com.github.blir.admintoggle;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
+
 import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,9 +19,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.minepop.servegame.admintoggle.Snapshot.Visibility;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.github.blir.admintoggle.Snapshot.Visibility;
 
 /**
  *
@@ -24,7 +28,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
  * @version 2.0.0 Beta
  * @since 30 July 2013
  */
-public class Admin extends JavaPlugin {
+public class AdminToggle extends JavaPlugin {
 
     protected enum Action {
 
@@ -35,8 +39,8 @@ public class Admin extends JavaPlugin {
         DELETEWORLDGROUP, LISTWORLDGROUPS, MOVESNAPSHOT, SNAPSHOTTYPE,
         ADMINTOGGLE, TEST, VERSION, HELP
     }
-    protected final ArrayList<User> users = new ArrayList<User>(0);
-    protected final ArrayList<WorldGroup> worldGroups = new ArrayList<WorldGroup>(0);
+    protected final Map<String, User> users = new HashMap<String, User>();
+    protected final List<WorldGroup> worldGroups = new ArrayList<WorldGroup>();
     private final int README_VERSION = 5;
     private boolean vault;
     private Economy econ = null;
@@ -60,13 +64,13 @@ public class Admin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void onPlayerJoin(PlayerJoinEvent evt) {
-                if (!isUser(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
-                        || evt.getPlayer().hasPermission("admintoggle.basic"))) {
-                    users.add(new User(evt.getPlayer().getName()));
+                if (!users.containsKey(evt.getPlayer().getName()) && (evt.getPlayer().hasPermission("admintoggle.*")
+                                                           || evt.getPlayer().hasPermission("admintoggle.basic"))) {
+                    users.put(evt.getPlayer().getName(), new User(evt.getPlayer().getName()));
                     evt.getPlayer().sendMessage("§aWelcome to Admin Toggle. For instructions on "
-                            + "using this plugin you can view the read me file here: "
-                            + "https://github.com/Blir/AdminToggle - I hope you find this "
-                            + "plugin useful! :)");
+                                                + "using this plugin you can view the read me file here: "
+                                                + "https://github.com/Blir/AdminToggle - I hope you find this "
+                                                + "plugin useful! :)");
                 }
             }
         }, this);
@@ -77,7 +81,7 @@ public class Admin extends JavaPlugin {
         getDataFolder().mkdirs();
         load();
         if (!isWorldGroup("Default") && getConfig().getBoolean("worldgroups.makedefault") && !isInWorldGroup("world") && !isInWorldGroup("world_nether") && !isInWorldGroup("world_the_end")) {
-            worldGroups.add(new WorldGroup("Default", new String[]{"world", "world_nether", "world_the_end"}));
+            worldGroups.add(new WorldGroup("Default", "world", "world_nether", "world_the_end"));
         }
         if (!getConfig().getString("readme.version").equals(String.valueOf(README_VERSION))) {
             saveResource("README.txt", true);
@@ -107,19 +111,20 @@ public class Admin extends JavaPlugin {
      * Called when a player executes a command.
      *
      * @param sender The sender of the command
-     * @param cmd The command sent
+     * @param cmd    The command sent
      * @param label
-     * @param args The command arguments
+     * @param args   The command arguments
      * @return success
      */
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label,
+                             String[] args) {
 
         User user = null;
         Player player = null;
         if (sender instanceof Player) {
             player = (Player) sender;
-            user = getUser(player.getName());
+            user = users.get(player.getName());
         }
 
         switch (Action.valueOf(cmd.getName().toUpperCase())) {
@@ -198,8 +203,8 @@ public class Admin extends JavaPlugin {
                     player.sendMessage("§cIncorrect amount of arguments!");
                     return false;
                 }
-                if (isUser(args[0])) {
-                    User target = getUser(args[0]);
+                if (users.containsKey(args[0])) {
+                    User target = users.get(args[0]);
                     if (loadSnapshot(user, args[1], player, target)) {
                         player.sendMessage("§9" + args[0] + "§a's snapshot \"§9" + args[1] + "§a\" loaded!");
                     } else {
@@ -234,8 +239,8 @@ public class Admin extends JavaPlugin {
                         sender.sendMessage("§c/listsnapshots <user name>");
                         return true;
                     }
-                    if (isUser(args[0])) {
-                        user = getUser(args[0]);
+                    if (users.containsKey(args[0])) {
+                        user = users.get(args[0]);
                         if (!user.getSnapshots().isEmpty()) {
                             sender.sendMessage("§9" + args[0] + "§a's snapshots:");
                             for (Snapshot snap : user.getSnapshots()) {
@@ -271,8 +276,8 @@ public class Admin extends JavaPlugin {
                         sender.sendMessage("§c/deletesnapshot <snapshot name> <user name> <world>");
                         return true;
                     }
-                    if (isUser(args[1])) {
-                        user = getUser(args[1]);
+                    if (users.containsKey(args[1])) {
+                        user = users.get(args[1]);
                         if (getServer().getWorld(args[2]) != null && user.removeSnapshot(args[0], args[2])) {
                             sender.sendMessage("§9" + args[1] + "§a's snapshot \"§9" + args[0] + "§a\" has been deleted from the world \"§9" + args[2] + "§a.\"");
                         } else {
@@ -309,8 +314,8 @@ public class Admin extends JavaPlugin {
                         sender.sendMessage("§c/admincheck <user name>");
                         return true;
                     }
-                    if (isUser(args[0])) {
-                        sender.sendMessage("§aAdmin mode is §9" + (getUser(args[0]).isAdmin() ? "enabled" : "disabled") + "§a for \"§9" + args[0] + "§a.\"");
+                    if (users.containsKey(args[0])) {
+                        sender.sendMessage("§aAdmin mode is §9" + (users.get(args[0]).isAdmin() ? "enabled" : "disabled") + "§a for \"§9" + args[0] + "§a.\"");
                     } else {
                         if (getServer().getPlayer(args[0]) == null) {
                             sender.sendMessage("§cThe user \"§9" + args[0] + "§c\" doesn't exist.");
@@ -356,7 +361,7 @@ public class Admin extends JavaPlugin {
                     return false;
                 }
                 sender.sendMessage("§aAll snapshots: ");
-                for (User regUser : users) {
+                for (User regUser : users.values()) {
                     if (regUser.getSnapshots().isEmpty()) {
                         sender.sendMessage("§2" + regUser.getName() + " has no snapshots.");
                     } else {
@@ -452,7 +457,7 @@ public class Admin extends JavaPlugin {
                 }
                 ungroupWorlds(Arrays.asList(worlds));
                 sender.sendMessage("§9" + getWorldGroupByName(args[0]).removeWorlds(worlds)
-                        + "§a world(s) have been removed from the world group \"§9" + args[0] + "§a.\"");
+                                   + "§a world(s) have been removed from the world group \"§9" + args[0] + "§a.\"");
                 return true;
             case DELETEWORLDGROUP:
                 if (args.length != 1) {
@@ -507,7 +512,7 @@ public class Admin extends JavaPlugin {
                         sender.sendMessage("§c/movesnapshot <snapshot name> <destination world> <user name> <world of snapshot>");
                         return true;
                     }
-                    if (!isUser(args[2])) {
+                    if (!users.containsKey(args[2])) {
                         sender.sendMessage("§cThe user \"§9" + args[2] + "§c\" does not exist!");
                         return true;
                     }
@@ -515,7 +520,7 @@ public class Admin extends JavaPlugin {
                         sender.sendMessage("§cThe world \"§9" + args[1] + "§c\" does not exist!");
                         return true;
                     }
-                    Snapshot snap = getUser(args[2]).getSnapshot(args[0], args[3]);
+                    Snapshot snap = users.get(args[2]).getSnapshot(args[0], args[3]);
                     if (snap == null) {
                         sender.sendMessage("§9" + args[2] + "§c does not have the snapshot \"§9" + args[0] + "§c.\"");
                         return true;
@@ -569,7 +574,7 @@ public class Admin extends JavaPlugin {
                         sender.sendMessage("§c/snapshottype <snapshot name> <global|private|grouped> <user name> <world>");
                         return true;
                     }
-                    user = getUser(args[2]);
+                    user = users.get(args[2]);
                     if (user == null) {
                         sender.sendMessage("§cThe user \"§9" + args[2] + "§c\" doesn't exist or isn't registered!");
                         return true;
@@ -614,40 +619,6 @@ public class Admin extends JavaPlugin {
                     getServer().dispatchCommand(sender, "help admintoggle");
                 }
                 return true;
-        }
-        return false;
-    }
-
-    /**
-     * Returns the User associated with the given name, and creates one if one
-     * isn't found.
-     *
-     * @param name The name of the User
-     * @return The User
-     */
-    public User getUser(String name) {
-        for (User user : users) {
-            if (name.equals(user.getName())) {
-                return user;
-            }
-        }
-        User user = new User(name);
-        users.add(user);
-        return user;
-    }
-
-    /**
-     * Returns whether or not the Player with the given name is registered in
-     * the plugin.
-     *
-     * @param name The name of the Player to check if they're registered
-     * @return true if the Player is registered
-     */
-    public boolean isUser(String name) {
-        for (User user : users) {
-            if (user.getName().equals(name)) {
-                return true;
-            }
         }
         return false;
     }
@@ -716,14 +687,15 @@ public class Admin extends JavaPlugin {
     /**
      * Saves a Snapshot to RAM.
      *
-     * @param user The User to save the Snapshot to
-     * @param name The name the Snapshot will be saved as
-     * @param player The Player saving the Snapshot
+     * @param user      The User to save the Snapshot to
+     * @param name      The name the Snapshot will be saved as
+     * @param player    The Player saving the Snapshot
      * @param overwrite If true then overwrite the existing Snapshot with the
-     * given name, if there is one
+     *                  given name, if there is one
      * @return true if the Snapshot was saved.
      */
-    public boolean saveSnapshot(User user, String name, Player player, boolean overwrite) {
+    public boolean saveSnapshot(User user, String name, Player player,
+                                boolean overwrite) {
         Snapshot snap;
         if (overwrite) {
             snap = user.getSnapshot(name, player.getWorld().getName());
@@ -760,13 +732,14 @@ public class Admin extends JavaPlugin {
     /**
      * Loads a Snapshot from RAM.
      *
-     * @param user The User to load the Snapshot to
-     * @param name The name of the Snapshot to load
+     * @param user   The User to load the Snapshot to
+     * @param name   The name of the Snapshot to load
      * @param player The Player to load the Snapshot to
      * @param target The User to load the Snapshot from, null if no target
      * @return true if the Snapshot was loaded
      */
-    public boolean loadSnapshot(User user, String name, Player player, User target) {
+    public boolean loadSnapshot(User user, String name, Player player,
+                                User target) {
         Snapshot snap;
         if (target == null) {
             snap = user.getSnapshot(name, player.getWorld().getName());
@@ -788,7 +761,7 @@ public class Admin extends JavaPlugin {
     /**
      * Reverts the Snapshot for the given User and Player.
      *
-     * @param user The User associated with the Player
+     * @param user   The User associated with the Player
      * @param player The Player to have their Snapshot reverted
      * @return true if the Snapshot was reverted
      */
@@ -829,19 +802,20 @@ public class Admin extends JavaPlugin {
         econ.depositPlayer(name, amount);
     }
 
-    protected static ItemStack[] cloneItemStack(ItemStack[] stack) {
-        ItemStack[] inventory = new ItemStack[stack.length];
-        for (int idx = 0; idx < stack.length; idx++) {
-            if (stack[idx] != null) {
-                inventory[idx] = stack[idx].clone();
+    @Deprecated
+    protected static ItemStack[] cloneItemStack(ItemStack[] original) {
+        ItemStack[] clone = new ItemStack[original.length];
+        for (int idx = 0; idx < original.length; idx++) {
+            if (original[idx] != null) {
+                clone[idx] = original[idx].clone();
             }
         }
-        return inventory;
+        return clone;
     }
 
     protected boolean isConflict(Snapshot prospective) {
         WorldGroup wg = getWorldGroupByWorld(prospective.getWorld());
-        User user = getUser(prospective.getUser());
+        User user = users.get(prospective.getUser());
         for (String world : wg.getWorlds()) {
             Snapshot test = user.getSnapshot(prospective.getName(), world);
             if (test != null && test != prospective) {
@@ -853,17 +827,15 @@ public class Admin extends JavaPlugin {
 
     protected boolean isConflict(WorldGroup wg, String[] worlds) {
         boolean conflict = false;
-        for (int idx = 0; idx < worlds.length; idx++) {
-            for (String world : worlds) {
-                for (User user : users) {
-                    for (Snapshot snap : user.getSnapshots()) {
-                        if (snap.getVisibility() == Visibility.GROUPED && wg.isMember(snap.getWorld()) && user.getSnapshot(snap.getName(), world) != null) {
-                            conflict = true;
-                        }
+        for (String world : worlds) {
+            for (User user : users.values()) {
+                for (Snapshot snap : user.getSnapshots()) {
+                    if (snap.getVisibility() == Visibility.GROUPED && wg.isMember(snap.getWorld()) && user.getSnapshot(snap.getName(), world) != null) {
+                        conflict = true;
                     }
                 }
-                wg.addWorld(world);
             }
+            wg.addWorld(world);
         }
         wg.removeWorlds(worlds);
         return conflict;
@@ -871,7 +843,7 @@ public class Admin extends JavaPlugin {
 
     protected void ungroupWorlds(List<String> worlds) {
         for (String world : worlds) {
-            for (User user : users) {
+            for (User user : users.values()) {
                 for (Snapshot snap : user.getSnapshots()) {
                     if (snap.getWorld().equals(world) && snap.getVisibility() == Visibility.GROUPED) {
                         snap.setVisibility(Visibility.PRIVATE);
@@ -885,8 +857,9 @@ public class Admin extends JavaPlugin {
         YamlConfiguration out = new YamlConfiguration();
         try {
             out.set("user.count", users.size());
+            List<User> userList = new ArrayList<User>(users.values());
             for (int idx = 0; idx < users.size(); idx++) {
-                User user = users.get(idx);
+                User user = userList.get(idx);
                 out.set("user." + idx + ".name", user.getName());
                 out.set("user." + idx + ".adminmode", user.isAdmin());
                 out.set("user." + idx + ".snapshot.count", user.getSnapshots().size());
@@ -915,7 +888,7 @@ public class Admin extends JavaPlugin {
                     out.set("worldgroup." + idx + ".world." + idx2, wg.getWorlds().get(idx2));
                 }
             }
-            out.save(new File(getDataFolder(), "data" + (backup ? " - " + java.text.DateFormat.getDateInstance().format(Calendar.getInstance().getTime()) : "") + ".yml"));
+            out.save(new File(getDataFolder(), "data" + (backup ? " - " + new SimpleDateFormat("yyyy/MM/dd").format(Calendar.getInstance().getTime()) : "") + ".yml"));
         } catch (IOException ex) {
             getLogger().log(Level.WARNING, "Error loading data.", ex);
         }
@@ -932,20 +905,20 @@ public class Admin extends JavaPlugin {
                 int snapCount = in.getInt("user." + idx + ".snapshot.count");
                 for (int idx2 = 0; idx2 < snapCount; idx2++) {
                     user.addSnapshot(new Snapshot(user.getName(),
-                            in.getString("user." + idx + ".snapshot." + idx2 + ".name"),
-                            ((ArrayList<ItemStack>) in.get("user." + idx + ".snapshot." + idx2 + ".inv")).toArray(new ItemStack[36]),
-                            ((ArrayList<ItemStack>) in.get("user." + idx + ".snapshot." + idx2 + ".armor")).toArray(new ItemStack[4]),
-                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".exp"),
-                            in.getInt("user." + idx + ".snapshot." + idx2 + ".level"),
-                            GameMode.valueOf(in.getString("user." + idx + ".snapshot." + idx2 + ".gamemode")),
-                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".exhaustion"),
-                            in.getInt("user." + idx + ".snapshot." + idx2 + ".foodlevel"),
-                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".saturation"),
-                            (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".balance"),
-                            in.getString("user." + idx + ".snapshot." + idx2 + ".world"),
-                            Visibility.valueOf(in.getString("user." + idx + ".snapshot." + idx2 + ".visibility"))));
+                                                  in.getString("user." + idx + ".snapshot." + idx2 + ".name"),
+                                                  ((ArrayList<ItemStack>) in.get("user." + idx + ".snapshot." + idx2 + ".inv")).toArray(new ItemStack[36]),
+                                                  ((ArrayList<ItemStack>) in.get("user." + idx + ".snapshot." + idx2 + ".armor")).toArray(new ItemStack[4]),
+                                                  (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".exp"),
+                                                  in.getInt("user." + idx + ".snapshot." + idx2 + ".level"),
+                                                  GameMode.valueOf(in.getString("user." + idx + ".snapshot." + idx2 + ".gamemode")),
+                                                  (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".exhaustion"),
+                                                  in.getInt("user." + idx + ".snapshot." + idx2 + ".foodlevel"),
+                                                  (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".saturation"),
+                                                  (float) in.getDouble("user." + idx + ".snapshot." + idx2 + ".balance"),
+                                                  in.getString("user." + idx + ".snapshot." + idx2 + ".world"),
+                                                  Visibility.valueOf(in.getString("user." + idx + ".snapshot." + idx2 + ".visibility"))));
                 }
-                users.add(user);
+                users.put(user.getName(), user);
             }
             int worldGroupCount = in.getInt("worldgroup.count");
             for (int idx = 0; idx < worldGroupCount; idx++) {
@@ -956,7 +929,7 @@ public class Admin extends JavaPlugin {
                 worldGroups.add(new WorldGroup(in.getString("worldgroup." + idx + ".name"), worlds));
             }
         } catch (FileNotFoundException ex) {
-            getLogger().warning("data.yml file missing.");
+            // ignore; must be a first run
         } catch (IOException ex) {
             getLogger().log(Level.WARNING, "Error loading data.", ex);
         } catch (InvalidConfigurationException ex) {

@@ -1,6 +1,7 @@
-package com.minepop.servegame.admintoggle;
+package com.github.blir.admintoggle;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -11,12 +12,13 @@ import java.util.List;
  */
 public class User {
 
-    private String name;
-    private final ArrayList<Snapshot> snaps = new ArrayList<Snapshot>(0), snapLog = new ArrayList<Snapshot>(0);
+    private final String name;
+    private final List<Snapshot> snaps = new ArrayList<Snapshot>();
+    private final List<Snapshot> snapLog = new ArrayList<Snapshot>();
     private Snapshot currentSnap = null;
     private int snapLogIdx = 0;
     private boolean adminMode = false;
-    private static Admin plugin;
+    private static AdminToggle plugin;
 
     /**
      * Creates a new User with the given name.
@@ -42,7 +44,7 @@ public class User {
      * @param name The name of the Snapshot
      * @return The Snapshot added
      */
-    public Snapshot addSnapshot(String name) {
+    public final Snapshot addSnapshot(String name) {
         Snapshot snap = new Snapshot(this.name, name);
         snaps.add(snap);
         return snap;
@@ -52,8 +54,9 @@ public class User {
      * Adds a the given Snapshot to the User.
      *
      * @param snap The Snapshot to be added
+     * @return true if the snapshot was added
      */
-    public boolean addSnapshot(Snapshot snap) {
+    public final boolean addSnapshot(Snapshot snap) {
         return snaps.add(snap);
     }
 
@@ -62,7 +65,7 @@ public class User {
      *
      * @return The Snapshots
      */
-    public List<Snapshot> getSnapshots() {
+    public final List<Snapshot> getSnapshots() {
         return snaps;
     }
 
@@ -70,9 +73,10 @@ public class User {
      * Returns the Snapshot with the given name, or null if there isn't one.
      *
      * @param name The name of the Snapshot to be returned
+     * @param world The world the Snapshot was created in
      * @return The Snapshot
      */
-    public Snapshot getSnapshot(String name, String world) {
+    public final Snapshot getSnapshot(String name, String world) {
         for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
                 switch (snap.getVisibility()) {
@@ -100,8 +104,8 @@ public class User {
      * @param name The name of the Snapshot to search for
      * @return The Snapshots with matching names
      */
-    public List<Snapshot> getSnapshots(String name) {
-        List<Snapshot> matches = new ArrayList<Snapshot>(0);
+    public final List<Snapshot> getSnapshots(String name) {
+        List<Snapshot> matches = new LinkedList<Snapshot>();
         for (Snapshot snap : snaps) {
             if (snap.getName().equals(name)) {
                 matches.add(snap);
@@ -114,9 +118,10 @@ public class User {
      * Removes the Snapshot with the given name from the User.
      *
      * @param name The name of the Snapshot to be removed
+     * @param world The world the Snapshot was created in
      * @return true if a Snapshot was removed
      */
-    public boolean removeSnapshot(String name, String world) {
+    public final boolean removeSnapshot(String name, String world) {
         Snapshot snap = getSnapshot(name, world);
         return snap != null && snaps.remove(snap);
     }
@@ -124,11 +129,11 @@ public class User {
     /**
      * Returns whether or not the Snapshot with the given name exists.
      *
-     * @param name The name of the Snapshot
+     * @param name  The name of the Snapshot
      * @param world The WorldGroup to be associated with the Snapshot
      * @return true if it exists
      */
-    public boolean hasSnapshot(String name, String world) {
+    public final boolean hasSnapshot(String name, String world) {
         return getSnapshot(name, world) != null;
     }
 
@@ -140,7 +145,7 @@ public class User {
      */
     public void logSnapshot(Snapshot snap) {
         if (currentSnap != null) {
-            snapLog.add(currentSnap.clone());
+            snapLog.add(new Snapshot(currentSnap));
         }
         snapLogIdx = snapLog.size() - 1;
         currentSnap = snap;
@@ -162,7 +167,7 @@ public class User {
     /**
      * Clears the Snapshots for the User.
      */
-    public void clearSnapshots() {
+    public final void clearSnapshots() {
         snaps.clear();
     }
 
@@ -171,7 +176,7 @@ public class User {
      *
      * @return The value of admin, true if admin mode is enabled
      */
-    public boolean isAdmin() {
+    public final boolean isAdmin() {
         return adminMode;
     }
 
@@ -180,7 +185,7 @@ public class User {
      *
      * @return The value of admin, true if admin mode is enabled
      */
-    public boolean invertAdminMode() {
+    public final boolean invertAdminMode() {
         adminMode = !adminMode;
         return adminMode;
     }
@@ -188,10 +193,9 @@ public class User {
     /**
      * Sets the value of admin for the User.
      *
-     * @param admin The value admin will be set to
-     * @return The value of admin, true if admin mode is enabled
+     * @param adminMode The new value of adminMode
      */
-    public void setAdminMode(boolean adminMode) {
+    public final void setAdminMode(boolean adminMode) {
         this.adminMode = adminMode;
     }
 
@@ -204,7 +208,7 @@ public class User {
         return currentSnap;
     }
 
-    protected static void setPlugin(Admin plugin) {
+    protected static void setPlugin(AdminToggle plugin) {
         User.plugin = plugin;
     }
 }

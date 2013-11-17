@@ -1,6 +1,6 @@
 name: AdminToggle
-main: com.minepop.servegame.admintoggle.Admin
-version: 2.0.0 Beta
+main: com.github.blir.admintoggle.AdminToggle
+version: 2.0.1
 author: Blir
 softdepend: [Vault]
 commands:

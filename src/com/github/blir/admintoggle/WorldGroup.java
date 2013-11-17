@@ -1,9 +1,8 @@
-package com.minepop.servegame.admintoggle;
+package com.github.blir.admintoggle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -13,8 +12,8 @@ import java.util.Objects;
  */
 public class WorldGroup {
 
-    private String name;
-    private List<String> worlds = new ArrayList<String>(0);
+    private final String name;
+    private final List<String> worlds = new ArrayList<String>();
 
     /**
      * Creates a new WorldGroup with the specified name.
@@ -31,7 +30,9 @@ public class WorldGroup {
      *
      * @param name
      * @param world
+     * @deprecated
      */
+    @Deprecated
     public WorldGroup(String name, String world) {
         this.name = name;
         worlds.add(world);
@@ -44,9 +45,9 @@ public class WorldGroup {
      * @param name
      * @param worlds
      */
-    public WorldGroup(String name, String[] worlds) {
+    public WorldGroup(String name, String... worlds) {
         this.name = name;
-        this.worlds.addAll(Arrays.asList(worlds));
+        addWorlds(worlds);
     }
 
     /**
@@ -56,21 +57,17 @@ public class WorldGroup {
      * @param name The name of the WorldGroup to test for membership
      * @return true if the WorldGroup with the given name is a member
      */
-    public boolean isMember(String name) {
-        for (String world : worlds) {
-            if (world.equals(name)) {
-                return true;
-            }
-        }
-        return false;
+    public final boolean isMember(String name) {
+        return worlds.contains(name);
     }
 
     /**
      * Adds the world with the given name to this WorldGroup.
      *
      * @param world The name of the world to add to this WorldGroup
+     * @return true if the world was added
      */
-    public boolean addWorld(String world) {
+    public final boolean addWorld(String world) {
         return worlds.add(world);
     }
 
@@ -78,40 +75,30 @@ public class WorldGroup {
      * Adds the worlds with the given names to this WorldGroup.
      *
      * @param worlds The names of the worlds to add to this WorldGroup
+     * @return true if the worlds were added
      */
-    public int addWorlds(String[] worlds) {
-        int worldsAdded = 0;
-        for (String world : worlds) {
-            if (this.worlds.add(world)) {
-                worldsAdded++;
-            }
-        }
-        return worldsAdded;
+    public final boolean addWorlds(String[] worlds) {
+        return this.worlds.addAll(Arrays.asList(worlds));
     }
 
     /**
      * Removes the world with the given name from this WorldGroup.
      *
      * @param world The name of the world to remove from this one
+     * @return true if the world was removed
      */
-    public boolean removeWorld(String world) {
+    public final boolean removeWorld(String world) {
         return worlds.remove(world);
     }
 
     /**
      * Removes the givens worlds from this WorldGroup.
-     * 
+     *
      * @param worlds The worlds to be removed from this WorldGroup
-     * @return The number of worlds removed
+     * @return true if the worlds were removed
      */
-    public int removeWorlds(String[] worlds) {
-        int worldsRemoved = 0;
-        for (String world : worlds) {
-            if (this.worlds.remove(world)) {
-                worldsRemoved++;
-            }
-        }
-        return worldsRemoved;
+    public final boolean removeWorlds(String[] worlds) {
+        return this.worlds.removeAll(Arrays.asList(worlds));
     }
 
     /**
@@ -119,7 +106,7 @@ public class WorldGroup {
      *
      * @return The name of this WorldGroup
      */
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
@@ -128,29 +115,34 @@ public class WorldGroup {
      *
      * @return The LinkedWorlds linked to this WorldGroup
      */
-    public List<String> getWorlds() {
+    public final List<String> getWorlds() {
         return worlds;
     }
 
     /**
      * Tests if this WorldGroup has the same contents as the given Object.
      *
-     * @param obj The Object to test for equality
+     * @param other The Object to test for equality
      * @return true if the contents are the same
      */
     @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof WorldGroup) ? name.equals(((WorldGroup) obj).name) : false;
+    public boolean equals(Object other) {
+        return (other instanceof WorldGroup)
+               ? name.equals(((WorldGroup) other).name)
+               : false;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 61 * hash + Objects.hashCode(name);
-        return hash;
+        return name.hashCode();
     }
-    
-    public boolean isEmpty() {
+
+    /**
+     * Returns whether the WorldGroup is empty.
+     *
+     * @return true if the WorldGroup is empty
+     */
+    public final boolean isEmpty() {
         return worlds.isEmpty();
     }
 }

@@ -1,5 +1,6 @@
-package com.minepop.servegame.admintoggle;
+package com.github.blir.admintoggle;
 
+import java.util.Arrays;
 import org.bukkit.GameMode;
 import org.bukkit.inventory.ItemStack;
 
@@ -11,17 +12,19 @@ import org.bukkit.inventory.ItemStack;
  */
 public class Snapshot {
 
-    public enum Visibility {
-
-        GLOBAL, PRIVATE, GROUPED
-    }
-    private String user, name, world;
+    private final String user, name;
+    private String world;
     private ItemStack[] inv, armor;
     private float exp, exhaust, sat;
     private int level, food;
     private GameMode gm;
-    private double balance = 0.0;
+    private double balance;
     private Visibility type = Visibility.PRIVATE;
+
+    public static enum Visibility {
+
+        GLOBAL, PRIVATE, GROUPED
+    }
 
     /**
      * Creates a new Snapshot belonging to the given user and with the given
@@ -38,19 +41,23 @@ public class Snapshot {
     /**
      * Creates a new Snapshot and sets the value of every instance variable.
      *
-     * @param user The user the Snapshot belongs to
-     * @param name The name of the Snapshot
-     * @param inv The inventory of the Snapshot
-     * @param armor The armor of the Snapshot
-     * @param exp The experience of the Snapshot
-     * @param level The level of the Snapshot
-     * @param gm The GameMode of the Snapshot
-     * @param ex The exhaustion of the Snapshot
-     * @param food The food level of the Snapshot
-     * @param sat The saturation of the Snapshot
-     * @param type The visibility of the Snapshot
+     * @param user    The user the Snapshot belongs to
+     * @param name    The name of the Snapshot
+     * @param inv     The inventory of the Snapshot
+     * @param armor   The armor of the Snapshot
+     * @param exp     The experience of the Snapshot
+     * @param level   The level of the Snapshot
+     * @param gm      The GameMode of the Snapshot
+     * @param ex      The exhaustion of the Snapshot
+     * @param food    The food level of the Snapshot
+     * @param sat     The saturation of the Snapshot
+     * @param balance The balance of the Snapshot
+     * @param world   The world the Snapshot was created on
+     * @param type    The visibility of the Snapshot
      */
-    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor, float exp, int level, GameMode gm, float ex, int food, float sat, double balance, String world, Visibility type) {
+    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor,
+                    float exp, int level, GameMode gm, float ex, int food,
+                    float sat, double balance, String world, Visibility type) {
         this.user = user;
         this.name = name;
         this.inv = inv;
@@ -67,11 +74,22 @@ public class Snapshot {
     }
 
     /**
+     * Creates a new Snapshot that is a copy of the given Snapshot
+     *
+     * @param copy
+     */
+    public Snapshot(Snapshot copy) {
+        this(copy.user, copy.name, Arrays.copyOf(copy.inv, copy.inv.length),
+             Arrays.copyOf(copy.armor, copy.armor.length), copy.exp, copy.level, copy.gm,
+             copy.exhaust, copy.food, copy.sat, copy.balance, copy.world, copy.type);
+    }
+
+    /**
      * Returns the name of the user the Snapshot belongs to.
      *
      * @return The name of the user
      */
-    public String getUser() {
+    public final String getUser() {
         return user;
     }
 
@@ -80,7 +98,7 @@ public class Snapshot {
      *
      * @return The name of the Snapshot
      */
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
@@ -186,12 +204,12 @@ public class Snapshot {
     /**
      * Sets the inventory and armor of the Snapshot.
      *
-     * @param inv The inventory to be set to
+     * @param inv   The inventory to be set to
      * @param armor The armor to be set to
      */
     public void setInv(ItemStack[] inv, ItemStack[] armor) {
-        this.inv = Admin.cloneItemStack(inv);
-        this.armor = Admin.cloneItemStack(armor);
+        this.inv = Arrays.copyOf(inv, inv.length);
+        this.armor = Arrays.copyOf(armor, armor.length);
     }
 
     /**
@@ -289,9 +307,13 @@ public class Snapshot {
      * Returns a deep clone of the Snapshot.
      *
      * @return The clone of the Snapshot
+     * @deprecated
      */
     @Override
+    @Deprecated
     public Snapshot clone() {
-        return new Snapshot(user, name, Admin.cloneItemStack(inv), Admin.cloneItemStack(armor), exp, level, gm, exhaust, food, sat, balance, world, type);
+        return new Snapshot(user, name, AdminToggle.cloneItemStack(inv),
+                            AdminToggle.cloneItemStack(armor), exp, level,
+                            gm, exhaust, food, sat, balance, world, type);
     }
 }
