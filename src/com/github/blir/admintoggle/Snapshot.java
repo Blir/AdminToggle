@@ -1,6 +1,7 @@
 package com.github.blir.admintoggle;
 
 import java.util.Arrays;
+import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,7 +13,8 @@ import org.bukkit.inventory.ItemStack;
  */
 public class Snapshot {
 
-    private final String user, name;
+    private final UUID user;
+    private final String name;
     private String world;
     private ItemStack[] inv, armor;
     private float exp, exhaust, sat;
@@ -28,12 +30,12 @@ public class Snapshot {
 
     /**
      * Creates a new Snapshot belonging to the given user and with the given
-     * name.
+     * UUID.
      *
      * @param user The user the Snapshot belongs to
      * @param name The name of the Snapshot
      */
-    public Snapshot(String user, String name) {
+    public Snapshot(UUID user, String name) {
         this.name = name;
         this.user = user;
     }
@@ -55,7 +57,7 @@ public class Snapshot {
      * @param world   The world the Snapshot was created on
      * @param type    The visibility of the Snapshot
      */
-    public Snapshot(String user, String name, ItemStack[] inv, ItemStack[] armor,
+    public Snapshot(UUID user, String name, ItemStack[] inv, ItemStack[] armor,
                     float exp, int level, GameMode gm, float ex, int food,
                     float sat, double balance, String world, Visibility type) {
         this.user = user;
@@ -89,7 +91,7 @@ public class Snapshot {
      *
      * @return The name of the user
      */
-    public final String getUser() {
+    public final UUID getUserUUID() {
         return user;
     }
 

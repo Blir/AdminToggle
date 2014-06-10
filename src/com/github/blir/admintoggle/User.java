@@ -3,6 +3,7 @@ package com.github.blir.admintoggle;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -12,21 +13,22 @@ import java.util.List;
  */
 public class User {
 
-    private final String name;
-    private final List<Snapshot> snaps = new ArrayList<Snapshot>();
-    private final List<Snapshot> snapLog = new ArrayList<Snapshot>();
-    private Snapshot currentSnap = null;
-    private int snapLogIdx = 0;
-    private boolean adminMode = false;
     private static AdminToggle plugin;
+
+    private final UUID id;
+    private final List<Snapshot> snaps = new LinkedList<Snapshot>();
+    private final List<Snapshot> snapLog = new ArrayList<Snapshot>();
+    private Snapshot currentSnap;
+    private int snapLogIdx;
+    private boolean adminMode;
 
     /**
      * Creates a new User with the given name.
      *
-     * @param name The name of the User
+     * @param uuid The UUID of the User
      */
-    public User(String name) {
-        this.name = name;
+    public User(UUID uuid) {
+        this.id = uuid;
     }
 
     /**
@@ -34,8 +36,8 @@ public class User {
      *
      * @return the name of the User
      */
-    public String getName() {
-        return name;
+    public UUID getUUID() {
+        return id;
     }
 
     /**
@@ -45,7 +47,7 @@ public class User {
      * @return The Snapshot added
      */
     public final Snapshot addSnapshot(String name) {
-        Snapshot snap = new Snapshot(this.name, name);
+        Snapshot snap = new Snapshot(this.id, name);
         snaps.add(snap);
         return snap;
     }
@@ -72,7 +74,7 @@ public class User {
     /**
      * Returns the Snapshot with the given name, or null if there isn't one.
      *
-     * @param name The name of the Snapshot to be returned
+     * @param name  The name of the Snapshot to be returned
      * @param world The world the Snapshot was created in
      * @return The Snapshot
      */
@@ -117,7 +119,7 @@ public class User {
     /**
      * Removes the Snapshot with the given name from the User.
      *
-     * @param name The name of the Snapshot to be removed
+     * @param name  The name of the Snapshot to be removed
      * @param world The world the Snapshot was created in
      * @return true if a Snapshot was removed
      */
@@ -185,9 +187,8 @@ public class User {
      *
      * @return The value of admin, true if admin mode is enabled
      */
-    public final boolean invertAdminMode() {
-        adminMode = !adminMode;
-        return adminMode;
+    public final boolean toggleAdminMode() {
+        return (adminMode = !adminMode);
     }
 
     /**

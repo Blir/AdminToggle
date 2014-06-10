@@ -1,6 +1,6 @@
 name: AdminToggle
 main: com.github.blir.admintoggle.AdminToggle
-version: 2.0.1
+version: 3.0.0
 author: Blir
 softdepend: [Vault]
 commands:
@@ -11,7 +11,7 @@ commands:
     permission-message: §cYou don't have permission to use that command.
     aliases: [asdf, adswitch]
   newsnapshot:
-    description: Creates a new save.
+    description: Creates a new snapshot save.
     usage: §c/<command> <snapshot name>
     permission: admintoggle.newsnapshot
     permission-message: §cYou don't have permission to use that command.
@@ -20,7 +20,7 @@ commands:
     description: Overwrites an existing save.
     usage: §c/<command> <snapshot name>
     permission: admintoggle.overwritesnapshot
-    permission-message: §cYou don't have permissions to use that command.
+    permission-message: §cYou don't have permission to use that command.
     aliases: [osnap, overwritesnap]
   loadsnapshot:
     description: Loads the specified save.
